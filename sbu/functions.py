@@ -281,18 +281,12 @@ def get_agregated_sbu(df: pd.DataFrame) -> pd.DataFrame:
     :class:`pd.DataFrame`:
         A new Pandas DataFrame with SBU usage accumulated over all columns in the ``"Month"``
         super-column.
-        Empty columns are filled with values of ``np.nan``.
 
     """
     ret = df.copy()
     del ret[('Month', 'sum')]
     ret['Month'] = np.cumsum(ret['Month'], axis=1)
     ret[('Month', 'sum')] = ret['Month'].iloc[:, -1]
-
-    for i, j in df['Month'].items():
-        if np.isnan(j).all():
-            ret.loc[('Month', i)] = np.nan
-
     return ret
 
 
