@@ -258,10 +258,10 @@ def get_sbu_per_project(df: pd.DataFrame) -> pd.DataFrame:
     df_tmp = df.set_index(PROJECT, inplace=False)
     df_tmp.index.name = 'project'
 
-    dict_ = {i: ['first' if i[0] == 'info' else sum] for i in df}
-    ret = df.groupby(df.index).aggregate(dict_)
+    dict_ = {i: ['first' if i[0] == 'info' else sum] for i in df_tmp}
+    ret = df_tmp.groupby(df_tmp.index).aggregate(dict_)
     ret.columns = ret.columns.droplevel(2)
-    ret[ACTIVE] = [_get_active_name(df, i) for i in ret.index]
+    ret[ACTIVE] = [_get_active_name(df_tmp, i) for i in ret.index]
     del ret[NAME]
     del ret[SBU_USAGE]
     return ret
