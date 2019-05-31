@@ -9,4 +9,4 @@ Installation
 
 SBU-reporter can be installed as following:
 
-*  ``pip install git+https://github.com/BvB93/SBU-Reporter@master --upgrade``
+*  PyPi: ``pip install git+https://github.com/BvB93/SBU-Reporter@master --upgrade``
