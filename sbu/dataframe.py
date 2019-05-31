@@ -10,7 +10,7 @@ import pandas as pd
 
 __all__ = [
     'yaml_to_pandas', 'get_date_range', 'construct_filename', 'get_sbu', 'get_sbu_per_project',
-    'get_agregated_sbu', 'get_percentage_sbu', 'update_globals'
+    'get_agregated_sbu', 'get_percentage_sbu', 'update_globals', 'parse_accuse'
 ]
 
 # Define mandatory columns
@@ -104,9 +104,9 @@ def yaml_to_pandas(filename: str) -> pd.DataFrame:
 
 
 def get_sbu(df: pd.DataFrame,
-            project: Optional[str] = None,
             start: Optional[int] = None,
-            end: Optional[int] = None) -> None:
+            end: Optional[int] = None,
+            project: Optional[str] = None) -> None:
     """Acquire the SBU usage for each account in the **df.index**.
 
     The start and end of the reported interval can, optionally, be altered with **start**
@@ -125,16 +125,17 @@ def get_sbu(df: pd.DataFrame,
         User accounts are expected to be stored in **df.index**.
         SBU usage (including the sum) is stored in the ``"Month"`` super-column.
 
-    project : :class:`str`
-        The code of the project of interest.
-
     start : :class:`int` or :class:`str`
-        The starting year of the interval.
+        Optional: The starting year of the interval.
         Defaults to the current year if ``None``.
 
     end : :class:`str` or :class:`int`
-        The final year of the interval.
+        Optional: The final year of the interval.
         Defaults to :code:`start + 1` if ``None``.
+
+    project : :class:`str`
+        Optional: The project code of the project of interest.
+        If not ``None``, only SBUs expended under this project are considered.
 
     """
     # Construct new columns in **df**
@@ -144,27 +145,7 @@ def get_sbu(df: pd.DataFrame,
         df[('Month', str(i)[:7])] = np.nan
 
     for u in df.index:
-        # Acquire SBU usage
-        usage = check_output(
-            ['accuse', '-u', u, '-sy', sy, '-ey', ey]
-        ).decode('utf-8').splitlines()
-
-        # Cast SBU usage into a dataframe
-        usage = [i.split() for i in usage[2:-1]]
-        df_tmp = pd.DataFrame(usage[1:], columns=usage[0])
-        df_tmp.drop(0, inplace=True)
-        df_tmp.index = pd.MultiIndex.from_product([['Month'], df_tmp['Month']])
-        if project is not None:
-            df_tmp.drop(df_tmp.index[df_tmp['Account'] != project], inplace=True)
-
-        # Parse the actual SBU's
-        df_tmp["SBU's"] /= np.timedelta64(1, 's')
-        df_tmp['Restituted'] /= np.timedelta64(1, 's')
-        df_tmp[u] = df_tmp["SBU's"] - df_tmp['Restituted']
-        df_tmp[u] /= 60**2
-
-        # Update **df**
-        df.update(df_tmp[[u]].T)
+        df.update(parse_accuse(u, sy, ey, project))
 
     # Calculate SBU sums
     df[('Month', 'sum')] = df['Month'].sum(axis=1)
@@ -310,6 +291,57 @@ def get_percentage_sbu(df: pd.DataFrame) -> pd.DataFrame:
     return ret
 
 
+def parse_accuse(user: str,
+                 start: str,
+                 end: str,
+                 project: Optional[str] = None) -> pd.DataFrame:
+    """Gather SBU usage of a specific user account.
+
+    The bash command ``accuse`` is used for gathering SBU usage along an interval defined
+    by **start** and **end**.
+    Results are collected and returned in a Pandas DataFrame.
+
+    Parameters
+    ----------
+    user : :class:`str`
+        A username.
+
+    start : :class:`str`
+        The starting year of the interval.
+
+    end : :class:`str`
+        The final year of the interval.
+
+    project : :class:`str`
+        Optional: The project code of the project of interest.
+        If not ``None``, only SBUs expended under this project are considered.
+
+    Returns
+    -------
+    :class:`pandas.DataFrame`:
+        The SBU usage of **user** over a specified period.
+
+    """
+    # Acquire SBU usage
+    arg = ['accuse', '-u', user, '-sy', start, '-ey', end]
+    usage = check_output(arg).decode('utf-8').splitlines()
+
+    # Cast SBU usage into a dataframe
+    usage = [i.split() for i in usage[2:-1]]
+    df_tmp = pd.DataFrame(usage[1:], columns=usage[0])
+    df_tmp.drop(0, inplace=True)
+    df_tmp.index = pd.MultiIndex.from_product([['Month'], df_tmp['Month']])
+    if project is not None:
+        df_tmp.drop(df_tmp.index[df_tmp['Account'] != project], inplace=True)
+
+    # Parse the actual SBU's
+    df_tmp["SBU's"] /= np.timedelta64(1, 's')
+    df_tmp['Restituted'] /= np.timedelta64(1, 's')
+    df_tmp[user] = df_tmp["SBU's"] - df_tmp['Restituted']
+    df_tmp[user] /= 60**2
+    return df_tmp[[user]].T
+
+
 def get_date_range(start: Optional[Union[str, int]] = None,
                    end: Optional[Union[str, int]] = None) -> Tuple[str, str]:
     """Return a starting and ending date as two strings.
@@ -375,7 +407,8 @@ def update_globals(column_dict: Dict[str, Tuple[Hashable, Hashable]]) -> None:
     ----------
     column_dict: :class:`dict` [:class:`str`, :class:`tuple` [:class:`Hashable`, :class:`Hashable`]]
         A dictionary which maps column names, present in ``GLOBVAR``, to new values.
-        Tuples, consisting of two hashables, are expected as values (*e.g.* ``("info", "new_name")``).
+        Tuples, consisting of two hashables,
+        are expected as values (*e.g.* ``("info", "new_name")``).
         The following keys (and default values) are available in ``GLOBVAR``:
 
         * ``"TMP"``: ``("info", "tmp")``
@@ -395,8 +428,7 @@ def update_globals(column_dict: Dict[str, Tuple[Hashable, Hashable]]) -> None:
         elif not isinstance(v[0], Hashable) or not isinstance(v[1], Hashable):
             err = "Invalid type: '{}'. A hashable was expected."
             raise TypeError(err.format(v.__class__.__name__))
-        else:
-            GLOBVAR[k] = v
+        GLOBVAR[k] = v
 
 
 def _get_total_sbu_requested(df: pd.DataFrame) -> float:
