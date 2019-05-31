@@ -19,7 +19,6 @@ TMP: Tuple[str] = (SUPER, 'tmp')
 NAME: Tuple[str] = (SUPER, 'name')
 ACTIVE: Tuple[str] = (SUPER, 'active')
 PROJECT: Tuple[str] = (SUPER, 'project')
-SBU_USAGE: Tuple[str] = (SUPER, 'SBU usage')
 SBU_REQUESTED: Tuple[str] = (SUPER, 'SBU requested')
 
 
@@ -263,7 +262,6 @@ def get_sbu_per_project(df: pd.DataFrame) -> pd.DataFrame:
     ret.columns = ret.columns.droplevel(2)
     ret[ACTIVE] = [_get_active_name(df_tmp, i) for i in ret.index]
     del ret[NAME]
-    del ret[SBU_USAGE]
     return ret
 
 
