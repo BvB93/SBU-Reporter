@@ -8,7 +8,19 @@ import yaml
 import numpy as np
 import pandas as pd
 
-__all__ = ['yaml_to_pandas', 'get_date_range', 'construct_filename', 'get_sbu']
+__all__ = [
+    'yaml_to_pandas', 'get_date_range', 'construct_filename', 'get_sbu', 'get_sbu_per_project',
+    'get_percentage_sbu'
+]
+
+SUPER: str = 'info'
+
+TMP: Tuple[str] = (SUPER, 'tmp')
+NAME: Tuple[str] = (SUPER, 'name')
+ACTIVE: Tuple[str] = (SUPER, 'active')
+PROJECT: Tuple[str] = (SUPER, 'project')
+SBU_USAGE: Tuple[str] = (SUPER, 'SBU usage')
+SBU_REQUESTED: Tuple[str] = (SUPER, 'SBU requested')
 
 
 def yaml_to_pandas(filename: str) -> pd.DataFrame:
@@ -68,17 +80,17 @@ def yaml_to_pandas(filename: str) -> pd.DataFrame:
     for k1, v1 in dict_.items():
         for k2, v2 in v1['users'].items():
             pre_df[k2] = {('info', k): v for k, v in v1.items() if k != 'users'}
-            pre_df[k2][('info', 'name')] = v2
-            pre_df[k2][('info', 'project')] = k1
+            pre_df[k2][NAME] = v2
+            pre_df[k2][PROJECT] = k1
     df = pd.DataFrame(pre_df).T
 
     # Fortmat, sort and return the dataframe
     df.index.name = 'username'
-    df[('info', 'SBU requested')] = df[('info', 'SBU requested')].astype(float, copy=False)
-    df[('info', 'idx')] = df.index
-    df.sort_values(by=[('info', 'project'), ('info', 'idx')], inplace=True)
+    df[SBU_REQUESTED] = df[SBU_REQUESTED].astype(float, copy=False)
+    df[TMP] = df.index
+    df.sort_values(by=[PROJECT, TMP], inplace=True)
     df.sort_index(axis=1, inplace=True, ascending=False)
-    del df[('info', 'idx')]
+    del df[TMP]
 
     return df
 
@@ -134,6 +146,7 @@ def construct_filename(prefix: str,
 
 
 def get_sbu(df: pd.DataFrame,
+            project: Optional[str] = None,
             start: Optional[int] = None,
             end: Optional[int] = None) -> None:
     """Acquire the SBU usage for each account in the **df.index**.
@@ -153,6 +166,9 @@ def get_sbu(df: pd.DataFrame,
         and :class:`pd.Index`, respectively.
         User accounts are expected to be stored in **df.index**.
         SBU usage (including the sum) is stored in the ``"Month"`` super-column.
+
+    project : :class:`str`
+        The code of the project of interest.
 
     start : :class:`int` or :class:`str`
         The starting year of the interval.
@@ -180,7 +196,8 @@ def get_sbu(df: pd.DataFrame,
         df_tmp = pd.DataFrame(usage[1:], columns=usage[0])
         df_tmp.drop(0, inplace=True)
         df_tmp.index = pd.MultiIndex.from_product([['Month'], df_tmp['Month']])
-        df_tmp.drop(df_tmp.index[df_tmp['Account'] != 'ncvul158'], inplace=True)
+        if project is not None:
+            df_tmp.drop(df_tmp.index[df_tmp['Account'] != project], inplace=True)
 
         # Parse the actual SBU's
         df_tmp["SBU's"] /= np.timedelta64(1, 's')
@@ -195,17 +212,17 @@ def get_sbu(df: pd.DataFrame,
     df[('Month', 'sum')] = df['Month'].sum(axis=1)
     df.loc['sum'] = np.nan
     df.loc['sum', 'Month'] = df['Month'].sum(axis=0).values
-    df.at['sum', ('info', 'project')] = 'sum'
-    df.at['sum', ('info', 'SBU requested')] = _get_total_sbu_requested(df)
+    df.at['sum', PROJECT] = 'sum'
+    df.at['sum', SBU_REQUESTED] = _get_total_sbu_requested(df)
 
     # Mark all active users
-    df[('info', 'active')] = False
-    df.loc[df[('Month', 'sum')] > 1.0, ('info', 'active')] = True
+    df[ACTIVE] = False
+    df.loc[df[('Month', 'sum')] > 1.0, ACTIVE] = True
 
 
 def _get_total_sbu_requested(df: pd.DataFrame) -> float:
     """Return the total amount of requested SBUs"""
-    slice_ = df[('info', 'SBU requested')]
+    slice_ = df[SBU_REQUESTED]
     return slice_.groupby(slice_.index).aggregate(sum).sum()
 
 
@@ -214,13 +231,12 @@ def _get_active_name(df: pd.DataFrame,
     """Return a tuple active with names of active users"""
     if i == 'sum':
         return ()
-    slice_ = df.loc[i, ('info', 'name')]
-    condition = df.loc[i, ('info', 'active')] == True
+    slice_ = df.loc[i, NAME]
+    condition = df.loc[i, ACTIVE] == True  # noqa
     return tuple(slice_[condition].tolist())
 
 
-def get_sbu_per_project(df: pd.DataFrame,
-                        project: Hashable = ('info', 'project')) -> pd.DataFrame:
+def get_sbu_per_project(df: pd.DataFrame) -> pd.DataFrame:
     """Construct a new Pandas DataFrame with SBU usage per project.
 
     Parameters
@@ -239,15 +255,15 @@ def get_sbu_per_project(df: pd.DataFrame,
         A new Pandas DataFrame holding the SBU usage per project (*i.e.* **df** [**project**]).
 
     """
-    df_tmp = df.set_index(('info', 'project'), inplace=False)
+    df_tmp = df.set_index(PROJECT, inplace=False)
     df_tmp.index.name = 'project'
 
     dict_ = {i: ['first' if i[0] == 'info' else sum] for i in df}
     ret = df.groupby(df.index).aggregate(dict_)
     ret.columns = ret.columns.droplevel(2)
-    ret[('info', 'active')] = [_get_active_name(df, i) for i in ret.index]
-    del ret[('info', 'name')]
-    del ret[('info', 'SBU usage')]
+    ret[ACTIVE] = [_get_active_name(df, i) for i in ret.index]
+    del ret[NAME]
+    del ret[SBU_USAGE]
     return ret
 
 
@@ -302,11 +318,6 @@ def get_percentage_sbu(df: pd.DataFrame) -> pd.DataFrame:
 
     """
     ret = df.copy()
-    ret['Month'] /= ret[('info', 'SBU requested')][:, None]
+    ret['Month'] /= ret[SBU_REQUESTED][:, None]
     ret['Month'] *= 100
     return ret
-
-
-filename = '/Users/bvanbeek/Downloads/test.yaml'
-df = yaml_to_pandas(filename)
-get_sbu(df)

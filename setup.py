@@ -17,7 +17,9 @@ with open('README.rst') as readme_file:
 setup(
     name='SBU-Reporter',
     version=version['__version__'],
-    description='Tools for collection, formating and reporting SBU usage on the SURFsara HPC clusters.',
+    description=(
+        'Tools for collection, formating and reporting SBU usage on the SURFsara HPC clusters.'
+    ),
     long_description=readme + '\n\n',
     author='Bas van Beek',
     author_email='b.f.van.beek@vu.nl',
