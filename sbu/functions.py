@@ -90,6 +90,7 @@ def yaml_to_pandas(filename: str) -> pd.DataFrame:
     df.sort_values(by=[PROJECT, TMP], inplace=True)
     df.sort_index(axis=1, inplace=True, ascending=False)
     del df[TMP]
+    df[ACTIVE] = False
 
     return df
 
