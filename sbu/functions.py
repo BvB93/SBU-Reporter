@@ -10,7 +10,7 @@ import pandas as pd
 
 __all__ = [
     'yaml_to_pandas', 'get_date_range', 'construct_filename', 'get_sbu', 'get_sbu_per_project',
-    'get_percentage_sbu'
+    'get_agregated_sbu', 'get_percentage_sbu'
 ]
 
 SUPER: str = 'info'

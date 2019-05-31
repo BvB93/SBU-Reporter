@@ -9,10 +9,10 @@ __email__ = 'b.f.van.beek@vu.nl'
 
 from .functions import (
     yaml_to_pandas, get_date_range, construct_filename, get_sbu,
-    get_sbu_per_project, get_percentage_sbu
+    get_sbu_per_project, get_agregated_sbu, get_percentage_sbu
 )
 
 __all__ = [
     'yaml_to_pandas', 'get_date_range', 'construct_filename', 'get_sbu',
-    'get_sbu_per_project', 'get_percentage_sbu'
+    'get_sbu_per_project', 'get_agregated_sbu', 'get_percentage_sbu'
 ]
