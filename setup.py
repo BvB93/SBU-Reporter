@@ -49,7 +49,8 @@ setup(
         'pyyaml',
         'numpy',
         'pandas',
-        'matplotlib'
+        'matplotlib',
+        'seaborn'
     ],
     setup_requires=[
         'pytest-runner',
