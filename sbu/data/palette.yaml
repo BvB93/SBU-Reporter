@@ -1,0 +1,42 @@
+palette:
+    - [1, 0, 0]
+    - [1, 0, 0]
+    - [0, 1, 0]
+    - [0, 1, 0]
+    - [0, 0, 1]
+    - [0, 0, 1]
+    - [1, 0, 1]
+    - [1, 0, 1]
+    - [0, 1, 1]
+    - [0, 1, 1]
+    - [1, 1, 0]
+    - [1, 1, 0]
+dashes:
+    - []
+    - [4, 2]
+    - []
+    - [4, 2]
+    - []
+    - [4, 2]
+    - []
+    - [4, 2]
+    - []
+    - [4, 2]
+    - []
+    - [4, 2]
+linewidth: 2
+style: ticks
+markers: [o, o, o, o, o, o, o, o, o, o, o, o]
+markersize: 10
+markeredgecolor: white
+markeredgewidth: 2
+antialiased: True
+dash_capstyle: 'round'
+style_overide:
+    axes.labelcolor: '0.0'
+    xtick.color: '0.0'
+    ytick.color: '0.0'
+    text.color: '0.0'
+    axes.edgecolor: '0.0'
+    axes.spines.right: False
+    axes.spines.top: False

@@ -14,20 +14,16 @@ __all__ = [
 ]
 
 # Define mandatory columns
-SUPER: str = 'info'
-GLOBVAR: Dict[str, Tuple[Hashable, Hashable]] = {
-    'TMP': (SUPER, 'tmp'),
-    'NAME': (SUPER, 'name'),
-    'ACTIVE': (SUPER, 'active'),
-    'PROJECT': (SUPER, 'project'),
-    'SBU_REQUESTED': (SUPER, 'SBU requested')
+_SUPER: str = 'info'
+_GLOBVAR: Dict[str, Tuple[Hashable, Hashable]] = {
+    'TMP': (_SUPER, 'tmp'),
+    'NAME': (_SUPER, 'name'),
+    'ACTIVE': (_SUPER, 'active'),
+    'PROJECT': (_SUPER, 'project'),
+    'SBU_REQUESTED': (_SUPER, 'SBU requested')
 }
 
-TMP = GLOBVAR['TMP']
-NAME = GLOBVAR['NAME']
-ACTIVE = GLOBVAR['ACTIVE']
-PROJECT = GLOBVAR['PROJECT']
-SBU_REQUESTED = GLOBVAR['SBU_REQUESTED']
+TMP, NAME, ACTIVE, PROJECT, SBU_REQUESTED = sorted(_GLOBVAR.values(), key=len)
 
 
 def yaml_to_pandas(filename: str) -> pd.DataFrame:
@@ -45,10 +41,10 @@ def yaml_to_pandas(filename: str) -> pd.DataFrame:
             SBU requested: 1000
             users:
                 user1: Donald Duck
-                user2: Scrouge McDuck
+                user2: Scrooge McDuck
                 user3: Mickey Mouse
 
-    Example output
+    Example output:
 
     .. code:: python
 
@@ -61,7 +57,7 @@ def yaml_to_pandas(filename: str) -> pd.DataFrame:
                  project            name  ... SBU requested           PI
         username                          ...
         user1          A     Donald Duck  ...        1000.0  Walt Disney
-        user2          A  Scrouge McDuck  ...        1000.0  Walt Disney
+        user2          A  Scrooge McDuck  ...        1000.0  Walt Disney
         user3          A    Mickey Mouse  ...        1000.0  Walt Disney
 
     Parameters
@@ -199,7 +195,7 @@ def get_agregated_sbu(df: pd.DataFrame) -> pd.DataFrame:
                         2019-01  2019-02  2019-03
         username
         Donald Duck      1000.0   1500.0    750.0
-        Scrouge McDuck   1000.0    500.0    250.0
+        Scrooge McDuck   1000.0    500.0    250.0
         Mickey Mouse     1000.0   5000.0   4000.0
 
     Which will be accumulated along each column in the following manner:
@@ -211,7 +207,7 @@ def get_agregated_sbu(df: pd.DataFrame) -> pd.DataFrame:
                         2019-01  2019-02  2019-03
         username
         Donald Duck      1000.0   2500.0   3250.0
-        Scrouge McDuck   1000.0   1500.0   1750.0
+        Scrooge McDuck   1000.0   1500.0   1750.0
         Mickey Mouse     1000.0   6000.0  10000.0
 
     Parameters
@@ -241,7 +237,7 @@ def get_percentage_sbu(df: pd.DataFrame) -> pd.DataFrame:
     """Calculate the % accumulated SBU usage per project.
 
     The column storing the requested amount of SBUs can be defined in the global variable
-    ``GLOBVAR["SBU_REQUESTED"]`` (default value: ``("info", "SBU requested")``).
+    ``_GLOBVAR["SBU_REQUESTED"]`` (default value: ``("info", "SBU requested")``).
 
     Examples
     --------
@@ -254,7 +250,7 @@ def get_percentage_sbu(df: pd.DataFrame) -> pd.DataFrame:
                        SBU requested 2019-01 2019-02  2019-03
         username
         Donald Duck           3250.0  1000.0  2500.0   3250.0
-        Scrouge McDuck        5000.0  1000.0  1500.0   1750.0
+        Scrooge McDuck        5000.0  1000.0  1500.0   1750.0
         Mickey Mouse          5000.0  1000.0  6000.0  10000.0
 
     Which will result in the following SBU usage:
@@ -266,7 +262,7 @@ def get_percentage_sbu(df: pd.DataFrame) -> pd.DataFrame:
                         2019-01  2019-02  2019-03
         username
         Donald Duck        31.0     77.0    100.0
-        Scrouge McDuck     20.0     30.0     35.0
+        Scrooge McDuck     20.0     30.0     35.0
         Mickey Mouse       20.0    120.0    200.0
 
     Parameters
@@ -335,8 +331,8 @@ def parse_accuse(user: str,
         df_tmp.drop(df_tmp.index[df_tmp['Account'] != project], inplace=True)
 
     # Parse the actual SBU's
-    df_tmp["SBU's"] /= np.timedelta64(1, 's')
-    df_tmp['Restituted'] /= np.timedelta64(1, 's')
+    df_tmp["SBU's"] /= np.timedelta64(1, 's')  # pylint: disable=too-many-function-args
+    df_tmp['Restituted'] /= np.timedelta64(1, 's')  # pylint: disable=too-many-function-args
     df_tmp[user] = df_tmp["SBU's"] - df_tmp['Restituted']
     df_tmp[user] /= 60**2
     return df_tmp[[user]].T
@@ -401,15 +397,15 @@ def construct_filename(prefix: str,
 
 
 def update_globals(column_dict: Dict[str, Tuple[Hashable, Hashable]]) -> None:
-    """Update the column names stored in the global variable ``GLOBVAR``.
+    """Update the column names stored in the global variable ``_GLOBVAR``.
 
     Parameters
     ----------
     column_dict: :class:`dict` [:class:`str`, :class:`tuple` [:class:`Hashable`, :class:`Hashable`]]
-        A dictionary which maps column names, present in ``GLOBVAR``, to new values.
+        A dictionary which maps column names, present in ``_GLOBVAR``, to new values.
         Tuples, consisting of two hashables,
         are expected as values (*e.g.* ``("info", "new_name")``).
-        The following keys (and default values) are available in ``GLOBVAR``:
+        The following keys (and default values) are available in ``_GLOBVAR``:
 
         * ``"TMP"``: ``("info", "tmp")``
         * ``"NAME"``: ``("info", "name")``
@@ -428,7 +424,10 @@ def update_globals(column_dict: Dict[str, Tuple[Hashable, Hashable]]) -> None:
         elif not isinstance(v[0], Hashable) or not isinstance(v[1], Hashable):
             err = "Invalid type: '{}'. A hashable was expected."
             raise TypeError(err.format(v.__class__.__name__))
-        GLOBVAR[k] = v
+
+    for k, v in column_dict.items():
+        _GLOBVAR[k] = v
+    _repopulate_globals()
 
 
 def _get_total_sbu_requested(df: pd.DataFrame) -> float:
@@ -438,10 +437,21 @@ def _get_total_sbu_requested(df: pd.DataFrame) -> float:
 
 
 def _get_active_name(df: pd.DataFrame,
-                     i: Hashable) -> tuple:
+                     index: Hashable) -> tuple:
     """Return a tuple active with names of active users."""
-    if i == 'sum':
+    if index == 'sum':
         return ()
-    slice_ = df.loc[i, NAME]
-    condition = df.loc[i, ACTIVE] == True  # noqa
+    slice_ = df.loc[index, NAME]
+    condition = df.loc[index, ACTIVE] == True  # noqa
     return tuple(slice_[condition].tolist())
+
+
+def _repopulate_globals() -> None:
+    """Update the all globally defined column names based on the content of ``_GLOBVAR``."""
+    global TMP
+    global NAME
+    global ACTIVE
+    global PROJECT
+    global SBU_REQUESTED
+
+    TMP, NAME, ACTIVE, PROJECT, SBU_REQUESTED = sorted(_GLOBVAR.values(), key=len)
