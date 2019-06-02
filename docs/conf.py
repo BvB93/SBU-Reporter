@@ -244,5 +244,7 @@ napoleon_include_private_with_doc = False
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
     'python': ('https://docs.python.org/', None),
-    'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None)
+    'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None),
+    'matplotlib': ('http://matplotlib.org', None),
+    'seaborn':  ('https://seaborn.pydata.org/', None)
 }
