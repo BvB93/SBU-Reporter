@@ -1,9 +1,7 @@
 """A module for handling data plotting."""
 
-from os.path import join
 from typing import (Tuple, Dict, Any, Optional)
 
-import yaml
 import pandas as pd
 import seaborn as sns
 import matplotlib as plt
