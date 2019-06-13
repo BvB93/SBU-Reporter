@@ -76,7 +76,7 @@ def yaml_to_pandas(filename: str) -> pd.DataFrame:
     """
     # Read the yaml file
     with open(filename, 'r') as f:
-        dict_ = yaml.load(f, Loader=yaml.CLoader)
+        dict_ = yaml.load(f, Loader=yaml.Loader)
 
     # Convert the yaml dictionary into a dataframe
     data: Dict[str, Dict[Tuple[Hashable, Hashable], Any]] = {}

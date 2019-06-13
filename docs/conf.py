@@ -59,8 +59,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'SBU-Reporter'
-copyright = u'2019, Bas van Beek'
-author = u"Bas van Beek"
+copyright = u'2019, B. F. van Beek'
+author = u"B. F. van Beek"
 
 
 # The version info for the project you're documenting, acts as replacement for
@@ -158,7 +158,7 @@ latex_documents = [(
     master_doc,
     'sbu.tex',
     u'SBU-Reporter Documentation',
-    u"Bas van Beek",
+    u"B. F. van Beek",
     'manual'
 )]
 

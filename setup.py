@@ -26,9 +26,10 @@ setup(
     url='https://github.com/BvB93/sbu-reporter',
     packages=[
         'sbu',
+        'sbu.data'
     ],
     package_dir={'sbu': 'sbu'},
-    package_data={'sbu': []},
+    package_data={'sbu': ['data/*.yaml']},
     include_package_data=True,
     entry_points={'console_scripts': []},
     license="GNU General Public License v3 or later",
@@ -46,7 +47,7 @@ setup(
     ],
     test_suite='tests',
     install_requires=[
-        'pyyaml',
+        'pyyaml>=5.1',
         'numpy',
         'pandas',
         'matplotlib',
