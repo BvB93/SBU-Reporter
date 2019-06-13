@@ -68,3 +68,7 @@ def sbu_workflow(filename: str,
 
     filename = sbu.construct_filename('Cluster_usage', '.{}')
     fig.save_figure(filename.format('png'))
+    df1.to_csv(filename.format('1.csv'))
+    df2.to_csv(filename.format('2.csv'))
+    df3.to_csv(filename.format('3.csv'))
+    df4.to_csv(filename.format('4.csv'))
