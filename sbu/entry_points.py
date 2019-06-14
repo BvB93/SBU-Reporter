@@ -82,8 +82,8 @@ def sbu_workflow(filename: str,
         df[('info', 'active')] = [', '.join(i) for i in df[('info', 'active')]]
     for df in (df1, df2, df3, df4):
         df['Month'] = df['Month'].fillna(0)
-        df['Month'] = df['Month'].astype(int)
         df.replace(np.inf, 0, inplace=True)
+        df['Month'] = df['Month'].astype(int)
         df.loc[''] = np.nan
         df.loc[' '] = np.nan
     df_concat = pd.concat([df1, df2, df3, df4])
