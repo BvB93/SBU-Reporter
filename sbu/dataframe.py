@@ -304,10 +304,12 @@ def parse_accuse(user: str,
         A username.
 
     start : :class:`str`
-        The starting year of the interval.
+        The starting date of the interval.
+        Accepts dates formatted as YYYY, MM-YYYY or DD-MM-YYYY.
 
     end : :class:`str`
-        The final year of the interval.
+        The final date of the interval.
+        Accepts dates formatted as YYYY, MM-YYYY or DD-MM-YYYY.
 
     project : :class:`str`
         Optional: The project code of the project of interest.
@@ -347,22 +349,24 @@ def get_date_range(start: Optional[Union[str, int]] = None,
     ----------
     start : :class:`int` or :class:`str`
         The starting year of the interval.
-        If a string is
+        Accepts dates formatted as YYYY, MM-YYYY or DD-MM-YYYY.
         Defaults to the current year if ``None``.
 
     end : :class:`str` or :class:`int`
         The final year of the interval.
+        Accepts dates formatted as YYYY, MM-YYYY or DD-MM-YYYY.
         Defaults to the current year + 1 if ``None``.
 
     Returns
     -------
     :class:`tuple` [:class:`str`, :class:`str`]
-        A tuple with the start and end year, formatted as strings.
+        A tuple with the start and end data, formatted as strings.
+        Dates are formatted as DD-MM-YYYY.
 
     """
     today = date.today()
     month = today.strftime('%m')
-    year = str(int(today.strftime('%Y') + 1))
+    year = str(int(today.strftime('%Y')) + 1)
 
     start = _parse_date(start)
     end = _parse_date(end, default_month=month, default_year=year)
