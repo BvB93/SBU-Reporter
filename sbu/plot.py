@@ -81,7 +81,7 @@ def pre_process_plt(df: pd.DataFrame,
                 lineplot_dict[i] = lineplot_dict[i][0:clip]
 
     sns.set(font_scale=1.2)
-    sns.set(rc={'figure.figsize': (12.0, 8.0)})
+    sns.set(rc={'figure.figsize': (10.0, 6.0)})
     sns.set_style(style='ticks', rc=overide_dict)
     return sns.lineplot(data=df, **lineplot_dict)
 
