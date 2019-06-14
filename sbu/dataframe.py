@@ -10,7 +10,8 @@ import pandas as pd
 
 __all__ = [
     'yaml_to_pandas', 'get_date_range', 'construct_filename', 'get_sbu', 'get_sbu_per_project',
-    'get_agregated_sbu', 'get_percentage_sbu', 'update_globals', 'parse_accuse'
+    'get_agregated_sbu', 'get_percentage_sbu', 'update_globals', 'parse_accuse',
+    'validate_usernames'
 ]
 
 # Define mandatory columns
