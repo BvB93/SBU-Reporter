@@ -8,7 +8,7 @@ from .plot import (pre_process_df, pre_process_plt, post_process_plt)
 
 from .dataframe import (
     yaml_to_pandas, get_date_range, construct_filename, get_sbu, get_sbu_per_project,
-    get_agregated_sbu, get_percentage_sbu, update_globals, parse_accuse
+    get_agregated_sbu, get_percentage_sbu, update_globals, parse_accuse, validate_usernames
 )
 
 __version__ = __version__
@@ -21,5 +21,6 @@ __all__ = [
     'pre_process_df', 'pre_process_plt', 'post_process_plt' ,
 
     'yaml_to_pandas', 'get_date_range', 'construct_filename', 'get_sbu', 'get_sbu_per_project',
-    'get_agregated_sbu', 'get_percentage_sbu', 'update_globals', 'parse_accuse'
+    'get_agregated_sbu', 'get_percentage_sbu', 'update_globals', 'parse_accuse',
+    'validate_usernames'
 ]
