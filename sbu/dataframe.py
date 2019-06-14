@@ -68,7 +68,7 @@ def yaml_to_pandas(filename: str) -> pd.DataFrame:
 
     Returns
     -------
-    :class:`pandas.DataFrame`:
+    :class:`pandas.DataFrame`
         A Pandas DataFrame constructed from **filename**.
         Columns and rows are instances of :class:`pandas.MultiIndex` and
         :class:`pandas.Index`, respectively.
@@ -137,7 +137,7 @@ def get_sbu(df: pd.DataFrame,
     """
     # Construct new columns in **df**
     sy, ey = get_date_range(start, end)
-    date_range = _get_date_range(sy, ey)
+    date_range = _get_datetimeindex(sy, ey)
     for i in date_range:
         df[('Month', str(i)[:7])] = np.nan
 
@@ -168,7 +168,7 @@ def get_sbu_per_project(df: pd.DataFrame) -> pd.DataFrame:
 
     Returns
     -------
-    :class:`pandas.DataFrame`:
+    :class:`pandas.DataFrame`
         A new Pandas DataFrame holding the SBU usage per project (*i.e.* **df** [**project**]).
 
     """
@@ -220,7 +220,7 @@ def get_agregated_sbu(df: pd.DataFrame) -> pd.DataFrame:
 
     Returns
     -------
-    :class:`pandas.DataFrame`:
+    :class:`pandas.DataFrame`
         A new Pandas DataFrame with SBU usage accumulated over all columns in the ``"Month"``
         super-column.
 
@@ -276,7 +276,7 @@ def get_percentage_sbu(df: pd.DataFrame) -> pd.DataFrame:
 
     Returns
     -------
-    :class:`pandas.DataFrame`:
+    :class:`pandas.DataFrame`
         A new Pandas DataFrame with % SBU usage accumulated over all columns in the ``"Month"``
         super-column.
 
@@ -317,7 +317,7 @@ def parse_accuse(user: str,
 
     Returns
     -------
-    :class:`pandas.DataFrame`:
+    :class:`pandas.DataFrame`
         The SBU usage of **user** over a specified period.
 
     """
@@ -339,6 +339,26 @@ def parse_accuse(user: str,
     df_tmp[user] = df_tmp["SBU's"] - df_tmp['Restituted']
     df_tmp[user] /= 60**2
     return df_tmp[[user]].T
+
+
+def validate_usernames(df: pd.DataFrame) -> None:
+    """Validate that all users belong to an account are available in the .yaml input file.
+
+    Parameters
+    ----------
+    df : :class:`pandas.DataFrame`
+        A DataFrame, produced by :func:`.yaml_to_pandas`, containing user accounts.
+        :attribute:`pandas.DataFrame.columns` and :attribute:`pandas.DataFrame.index`
+        should be instances of :class:`pandas.MultiIndex` and :class:`pandas.Index`, respectively.
+        User accounts are expected to be stored in :attribute:`pandas.DataFrame.index`.
+
+    Raises
+    ------
+    KeyError
+        Raised if one or more users reported by the ``accinfo`` command are absent from **df**.
+
+    """
+    pass
 
 
 def get_date_range(start: Optional[Union[str, int]] = None,
@@ -397,7 +417,7 @@ def construct_filename(prefix: str,
 
     Returns
     -------
-    :class:`str`:
+    :class:`str`
         A filename consisting of **prefix**, the current date and **suffix**.
 
     """
@@ -423,6 +443,14 @@ def update_globals(column_dict: Dict[str, Tuple[Hashable, Hashable]]) -> None:
         * ``"PROJECT"``: ``("info", "project")``
         * ``"SBU_REQUESTED"``: ``("info", "SBU requested")``
 
+    Raises
+    ------
+    TypeError
+        Raised if a value in **column_dict** does not consist of a tuple of hashables.
+
+    ValueError
+        Raised if the length of a value in **column_dict** is not not equal to ``2``.
+
     """
     for k, v in column_dict.items():
         if not isinstance(v, tuple):
@@ -440,8 +468,8 @@ def update_globals(column_dict: Dict[str, Tuple[Hashable, Hashable]]) -> None:
     _repopulate_globals()
 
 
-def _get_date_range(sy: str,
-                    ey: str) -> pd.DatetimeIndex:
+def _get_datetimeindex(sy: str,
+                       ey: str) -> pd.DatetimeIndex:
     """Create a Pandas DatetimeIndex from a start and end date.
 
     Parameters
@@ -456,7 +484,7 @@ def _get_date_range(sy: str,
 
     Returns
     -------
-    :class:`pandas.DatetimeIndex`:
+    :class:`pandas.DatetimeIndex`
         A DatetimeIndex starting from **sy** and ending on **ey**.
 
     """
@@ -489,8 +517,16 @@ def _parse_date(input_date: Union[str, int, None],
 
     Returns
     -------
-    :class:`str`:
+    :class:`str`
         A string, constructed from **date**, representing a date in DD-MM-YYYY format.
+
+    Raises
+    ------
+    ValueError
+        Raised if **input_date** is provided as string and contains more than ``2`` dashes.
+
+    TypeError
+        Raised if **input_date** is neither ``None`` nor a string or integer.
 
     """
     if default_year is None:
