@@ -113,7 +113,7 @@ def post_process_plt(df: pd.DataFrame,
 
     # Format the y-axis
     ax.yaxis.set_major_formatter(plt.ticker.StrMethodFormatter('{x:,.0f}'))
-    ax.set_ylabel('SBU')
+    ax.set_ylabel('SBU (System Billing Units) / hours')
     ax.set(ylim=(0, y_max))
 
     # Format the x-axis
