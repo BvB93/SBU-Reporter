@@ -5,6 +5,8 @@ import argparse
 from os.path import isfile
 from typing import (List, Optional)
 
+import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 
 import sbu
@@ -73,12 +75,16 @@ def sbu_workflow(filename: str,
     df_plot = sbu.pre_process_df(df3)
     ax = sbu.pre_process_plt(df_plot, sbu.lineplot_dict, sbu.style_overide)
     fig = sbu.post_process_plt(df_plot, ax)
+    plt.savefig(filename.format('png'), dpi=300, format='png', quality=100, transparent=True)
+
+    for df in (df2, df3, df4):
+        df[('info', 'active')] = [', '.join(i) for i in df[('info', 'active')]]
+    for df in (df1, df2, df3, df4):
+        df.loc[''] = np.nan
+        df.loc[' '] = np.nan
+    df_concat = pd.concat([df1, df2, df3, df4])
 
     filename = sbu.construct_filename('Cluster_usage', '.{}')
-    plt.savefig(filename.format('png'), dpi=300, format='png', quality=100, transparent=True)
-    df1.to_csv(filename.format('1.csv'))
-    df2.to_csv(filename.format('2.csv'))
-    df3.to_csv(filename.format('3.csv'))
-    df4.to_csv(filename.format('4.csv'))
+    df_concat.to_excel(filename.format('xlsx'))
 
     plt.show(block=True)
