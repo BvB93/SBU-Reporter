@@ -98,6 +98,7 @@ def yaml_to_pandas(filename: str) -> pd.DataFrame:
     del df[TMP]
     df[ACTIVE] = False
 
+    validate_usernames(df)
     return df
 
 
@@ -105,7 +106,7 @@ def get_sbu(df: pd.DataFrame,
             start: Optional[int] = None,
             end: Optional[int] = None,
             project: Optional[str] = None) -> None:
-    """Acquire the SBU usage for each account in the **df.index**.
+    """Acquire the SBU usage for each account in the :attr:`pandas.DataFrame.index`.
 
     The start and end of the reported interval can, optionally, be altered with **start**
     and **end**.
@@ -118,9 +119,9 @@ def get_sbu(df: pd.DataFrame,
     ----------
     df : :class:`pandas.DataFrame`
         A Pandas DataFrame with usernames and information, constructed by :func:`yaml_to_pandas`.
-        **df.columns** and **df.index** should be instances of :class:`pandas.MultiIndex`
-        and :class:`pandas.Index`, respectively.
-        User accounts are expected to be stored in **df.index**.
+        :attr:`pandas.DataFrame.columns` and :attr:`pandas.DataFrame.index` should
+        be instances of :class:`pandas.MultiIndex` and :class:`pandas.Index`, respectively.
+        User accounts are expected to be stored in :attr:`pandas.DataFrame.index`.
         SBU usage (including the sum) is stored in the ``"Month"`` super-column.
 
     start : :class:`int` or :class:`str`
@@ -164,8 +165,8 @@ def get_sbu_per_project(df: pd.DataFrame) -> pd.DataFrame:
     ----------
     df : :class:`pandas.DataFrame`
         A Pandas DataFrame with SBU usage per username, constructed by :func:`get_sbu`.
-        **df.columns** and **df.index** should be instances of :class:`pandas.MultiIndex`
-        and :class:`pandas.Index`, respectively.
+        :attr:`pandas.DataFrame.columns` and :attr:`pandas.DataFrame.index` should be
+        instances of :class:`pandas.MultiIndex` and :class:`pandas.Index`, respectively.
 
     Returns
     -------
@@ -216,8 +217,8 @@ def get_agregated_sbu(df: pd.DataFrame) -> pd.DataFrame:
     ----------
     df : :class:`pandas.DataFrame`
         A Pandas DataFrame with SBU usage per project, constructed by :func:`get_sbu_per_project`.
-        **df.columns** and **df.index** should be instances of :class:`pandas.MultiIndex`
-        and :class:`pandas.Index`, respectively.
+        :attr:`pandas.DataFrame.columns` and :attr:`pandas.DataFrame.index` should be
+        instances of :class:`pandas.MultiIndex` and :class:`pandas.Index`, respectively.
 
     Returns
     -------
@@ -272,8 +273,8 @@ def get_percentage_sbu(df: pd.DataFrame) -> pd.DataFrame:
     df : :class:`pandas.DataFrame`
         A Pandas DataFrame with the accumulated SBU usage per project,
         constructed by :func:`get_agregated_sbu`.
-        **df.columns** and **df.index** should be instances of :class:`pandas.MultiIndex`
-        and :class:`pandas.Index`, respectively.
+        :attr:`pandas.DataFrame.columns` and :attr:`pandas.DataFrame.index` should be
+        instances of :class:`pandas.MultiIndex` and :class:`pandas.Index`, respectively.
 
     Returns
     -------
@@ -343,15 +344,18 @@ def parse_accuse(user: str,
 
 
 def validate_usernames(df: pd.DataFrame) -> None:
-    """Validate that all users belong to an account are available in the .yaml input file.
+    """Validate that all users belonging to an account are available in the .yaml input file.
+
+    Raises a KeyErro If one or more usernames printed by the ``accinfo`` comand are absent from
+    **df**.
 
     Parameters
     ----------
     df : :class:`pandas.DataFrame`
         A DataFrame, produced by :func:`.yaml_to_pandas`, containing user accounts.
-        :attribute:`pandas.DataFrame.columns` and :attribute:`pandas.DataFrame.index`
+        :attr:`pandas.DataFrame.columns` and :attr:`pandas.DataFrame.index`
         should be instances of :class:`pandas.MultiIndex` and :class:`pandas.Index`, respectively.
-        User accounts are expected to be stored in :attribute:`pandas.DataFrame.index`.
+        User accounts are expected to be stored in :attr:`pandas.DataFrame.index`.
 
     Raises
     ------
@@ -359,7 +363,20 @@ def validate_usernames(df: pd.DataFrame) -> None:
         Raised if one or more users reported by the ``accinfo`` command are absent from **df**.
 
     """
-    pass
+    usage = check_output(['accinfo']).decode('utf-8').splitlines()
+    usage_gen = (i for i in usage)
+    for i in usage_gen:
+        if 'User' in i and 'Group' in i:
+            next(usage_gen)
+            usage = np.array([j.split()[0] for j in usage_gen])
+            break
+
+    bool_ar = np.isin(usage, df.index)
+    if bool_ar.all():
+        return
+    else:
+        err = 'The following users are absent from the .yaml input file: {}'
+        raise KeyError(err.format(usage[~bool_ar]))
 
 
 def get_date_range(start: Optional[Union[str, int]] = None,
@@ -438,11 +455,15 @@ def update_globals(column_dict: Dict[str, Tuple[Hashable, Hashable]]) -> None:
         are expected as values (*e.g.* ``("info", "new_name")``).
         The following keys (and default values) are available in ``_GLOBVAR``:
 
-        * ``"TMP"``: ``("info", "tmp")``
-        * ``"NAME"``: ``("info", "name")``
-        * ``"ACTIVE"``: ``("info", "active")``
-        * ``"PROJECT"``: ``("info", "project")``
-        * ``"SBU_REQUESTED"``: ``("info", "SBU requested")``
+        ===================== ==============================
+         Key                   Value
+        ===================== ==============================
+         ``"TMP"``             ``("info", "tmp")``
+         ``"NAME"``            ``("info", "name")``
+         ``"ACTIVE"``          ``("info", "active")``
+         ``"PROJECT"``         ``("info", "project")``
+         ``"SBU_REQUESTED"``   ``("info", "SBU requested")``
+        ===================== ==============================
 
     Raises
     ------
@@ -450,7 +471,7 @@ def update_globals(column_dict: Dict[str, Tuple[Hashable, Hashable]]) -> None:
         Raised if a value in **column_dict** does not consist of a tuple of hashables.
 
     ValueError
-        Raised if the length of a value in **column_dict** is not not equal to ``2``.
+        Raised if the length of a value in **column_dict** is not equal to ``2``.
 
     """
     for k, v in column_dict.items():
@@ -469,19 +490,19 @@ def update_globals(column_dict: Dict[str, Tuple[Hashable, Hashable]]) -> None:
     _repopulate_globals()
 
 
-def _get_datetimeindex(sy: str,
-                       ey: str) -> pd.DatetimeIndex:
+def _get_datetimeindex(start: str,
+                       end: str) -> pd.DatetimeIndex:
     """Create a Pandas DatetimeIndex from a start and end date.
 
     Parameters
     ----------
     sy : :class:`str`
         The start of the interval.
-        Accepts dates formatted as YYYY, MM-YYYY or DD-MM-YYYY.
+        Accepts dates formatted as DD-MM-YYYY.
 
     sy : :class:`str`
         The end of the interval.
-        Accepts dates formatted as YYYY, MM-YYYY or DD-MM-YYYY.
+        Accepts dates formatted as DD-MM-YYYY.
 
     Returns
     -------
@@ -489,9 +510,9 @@ def _get_datetimeindex(sy: str,
         A DatetimeIndex starting from **sy** and ending on **ey**.
 
     """
-    start = '-'.join(reversed(sy.split('-')))
-    end = '-'.join(reversed(ey.split('-')))
-    return pd.date_range(start, end, freq=pd.offsets.MonthBegin(), name='Month')
+    start_ = '-'.join(reversed(start.split('-')))
+    end_ = '-'.join(reversed(end.split('-')))
+    return pd.date_range(start_, end_, freq=pd.offsets.MonthBegin(), name='Month')
 
 
 def _parse_date(input_date: Union[str, int, None],
@@ -501,25 +522,26 @@ def _parse_date(input_date: Union[str, int, None],
 
     Parameters
     ----------
-    date : :class:`str`, :class:`int` or ``None``
+    input_date : :class:`str`, :class:`int` or ``None``
         The to-be parsed date.
         Allowed types and values are:
-            * ``None``: Defaults to the first day of the current year and month.
-            * :class:`int`: A year (*e.g.* ``2019``).
-            * :class:`str`: A date in YYYY, MM-YYYY or DD-MM-YYYY format (*e.g.* ``"22-10-2018"``).
+
+        * ``None``: Defaults to the first day of the current year and month.
+        * :class:`int`: A year (*e.g.* ``2019``).
+        * :class:`str`: A date in YYYY, MM-YYYY or DD-MM-YYYY format (*e.g.* ``"22-10-2018"``).
 
     default_month : :class:`str`
-        The default month if a month is not provided in **date**.
+        The default month if a month is not provided in **input_date**.
         Expects a month in MM format.
 
     default_year : :class:`str`
-        Optional: The default year if a year is not provided in **date**.
+        Optional: The default year if a year is not provided in **input_date**.
         Defaults to the current year if ``None``.
 
     Returns
     -------
     :class:`str`
-        A string, constructed from **date**, representing a date in DD-MM-YYYY format.
+        A string, constructed from **input_date**, representing a date in DD-MM-YYYY format.
 
     Raises
     ------
@@ -555,14 +577,14 @@ def _parse_date(input_date: Union[str, int, None],
 
 
 def _get_total_sbu_requested(df: pd.DataFrame) -> float:
-    """Return the total amount of requested SBUs."""
+    """Return the total number of requested SBUs."""
     slice_ = df[SBU_REQUESTED]
     return slice_.groupby(slice_.index).aggregate(sum).sum()
 
 
 def _get_active_name(df: pd.DataFrame,
-                     index: Hashable) -> tuple:
-    """Return a tuple active with names of active users."""
+                     index: Hashable) -> Tuple[str]:
+    """Return a tuple with the names of all active users."""
     if index == 'sum':
         return ()
     slice_ = df.loc[index, NAME]
