@@ -24,18 +24,18 @@ def main_sbu(args: Optional[List[str]] = None) -> None:
     )
 
     parser.add_argument(
-        '-p', '--project', type=str, default=None, required=False, nargs=1, dest='project',
+        '-p', '--project', type=str, default=[None], required=False, nargs=1, dest='project',
         metavar='<projectname>',
         help='The starting year of the interval. Defaults to the current year.'
     )
 
     parser.add_argument(
-        '-sy', '--startyear', type=int, default=None, required=False, nargs=1, dest='startyear',
+        '-sy', '--startyear', type=int, default=[None], required=False, nargs=1, dest='startyear',
         metavar='<YYYY>', help='The starting year of the interval. Defaults to the current year.'
     )
 
     parser.add_argument(
-        '-ey', '--endyear', type=int, default=None, required=False, nargs=1, dest='endyear',
+        '-ey', '--endyear', type=int, default=[None], required=False, nargs=1, dest='endyear',
         metavar='<YYYY>', help='The final year of the interval. Defaults to <startyear> + 1.'
     )
 
