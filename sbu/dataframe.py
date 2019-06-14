@@ -137,7 +137,7 @@ def get_sbu(df: pd.DataFrame,
     """
     # Construct new columns in **df**
     sy, ey = get_date_range(start, end)
-    date_range = pd.date_range(sy, ey, freq=pd.offsets.MonthBegin(), name='Month')
+    date_range = _get_date_range(sy, ey)
     for i in date_range:
         df[('Month', str(i)[:7])] = np.nan
 
@@ -438,6 +438,31 @@ def update_globals(column_dict: Dict[str, Tuple[Hashable, Hashable]]) -> None:
     for k, v in column_dict.items():
         _GLOBVAR[k] = v
     _repopulate_globals()
+
+
+def _get_date_range(sy: str,
+                    ey: str) -> pd.DatetimeIndex:
+    """Create a Pandas DatetimeIndex from a start and end date.
+
+    Parameters
+    ----------
+    sy : :class:`str`
+        The start of the interval.
+        Accepts dates formatted as YYYY, MM-YYYY or DD-MM-YYYY.
+
+    sy : :class:`str`
+        The end of the interval.
+        Accepts dates formatted as YYYY, MM-YYYY or DD-MM-YYYY.
+
+    Returns
+    -------
+    :class:`pandas.DatetimeIndex`:
+        A DatetimeIndex starting from **sy** and ending on **ey**.
+
+    """
+    start = '-'.join(reversed(sy.split('-')))
+    end = '-'.join(reversed(ey.split('-')))
+    return pd.date_range(start, end, freq=pd.offsets.MonthBegin(), name='Month')
 
 
 def _parse_date(input_date: Union[str, int, None],
