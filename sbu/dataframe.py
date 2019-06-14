@@ -440,7 +440,7 @@ def update_globals(column_dict: Dict[str, Tuple[Hashable, Hashable]]) -> None:
     _repopulate_globals()
 
 
-def _parse_date(date: Union[str, int, None],
+def _parse_date(input_date: Union[str, int, None],
                 default_month: str = '01',
                 default_year: Optional[str] = None) -> str:
     """Parse any dates supplied to :func:`.get_date_range`.
@@ -473,25 +473,23 @@ def _parse_date(date: Union[str, int, None],
     if default_month is None:
         default_month = '01'
 
-    if isinstance(date, int):
-        ret = '01-01-{:d}'.format(date)
-    elif date is None:
-        ret = '01-{}-{}'.format(default_month, default_year)
-    elif isinstance(date, str):
-        dash_count = date.count('-')
+    if isinstance(input_date, int):
+        return '01-01-{:d}'.format(input_date)
+    elif input_date is None:
+        return '01-{}-{}'.format(default_month, default_year)
+    elif isinstance(input_date, str):
+        dash_count = input_date.count('-')
         if dash_count == 0:
-            ret = '01-{}-{}'.format(default_month, date)
+            return '01-{}-{}'.format(default_month, input_date)
         elif dash_count == 1:
-            ret = '01-{}'.format(date)
+            return '01-{}'.format(input_date)
         elif dash_count == 2:
-            ret = date
+            return input_date
         else:
-            raise ValueError("'date': '{}'".format(date))
+            raise ValueError("'input_date': '{}'".format(input_date))
     else:
-        err = "Unsupported object type for the 'date' argument: '{}'"
-        raise TypeError(err.format(date.__class__.__name__))
-
-    return ret
+        err = "Unsupported object type for the 'input_date' argument: '{}'"
+        raise TypeError(err.format(input_date.__class__.__name__))
 
 
 def _get_total_sbu_requested(df: pd.DataFrame) -> float:
