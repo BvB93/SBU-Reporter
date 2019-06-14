@@ -1,5 +1,6 @@
 """A module for handling data plotting."""
 
+from datetime import date
 from typing import (Tuple, Dict, Any, Optional)
 
 import pandas as pd
@@ -120,6 +121,7 @@ def post_process_plt(df: pd.DataFrame,
     i = len(df.index) // 6
     ax.set(xticks=df.index[0::i])
 
-    ax.set_title('Accumulated SBU usage', fontdict={'fontsize': 18})
+    today = date.today().strftime('%d %b %Y')
+    ax.set_title('Accumulated SBU usage: {}'.format(today), fontdict={'fontsize': 18})
     ax.legend_.set_title('Project: SBU')
     return ax.get_figure()

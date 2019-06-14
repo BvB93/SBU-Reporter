@@ -136,10 +136,8 @@ def get_sbu(df: pd.DataFrame,
 
     """
     # Construct new columns in **df**
-    print(start, end)
     sy, ey = get_date_range(start, end)
     date_range = pd.date_range(sy, ey, freq=pd.offsets.MonthBegin(), name='Month')
-    print(date_range)
     for i in date_range:
         df[('Month', str(i)[:7])] = np.nan
 
@@ -368,7 +366,7 @@ def get_date_range(start: Optional[Union[str, int]] = None,
     """
     today = date.today()
     month = today.strftime('%m')
-    year = str(int(today.strftime('%Y')) + 1)
+    year = today.strftime('%Y')
 
     start = _parse_date(start, default_month='01', default_year=year)
     end = _parse_date(end, default_month=month, default_year=year)
