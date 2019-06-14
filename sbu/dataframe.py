@@ -136,6 +136,7 @@ def get_sbu(df: pd.DataFrame,
 
     """
     # Construct new columns in **df**
+    print(start, end)
     sy, ey = get_date_range(start, end)
     date_range = pd.date_range(sy, ey, freq=pd.offsets.MonthBegin(), name='Month')
     print(date_range)
