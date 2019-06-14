@@ -1,9 +1,8 @@
 """A module for handling data plotting."""
 
-from os.path import join
+from datetime import date
 from typing import (Tuple, Dict, Any, Optional)
 
-import yaml
 import pandas as pd
 import seaborn as sns
 import matplotlib as plt
@@ -83,6 +82,7 @@ def pre_process_plt(df: pd.DataFrame,
                 lineplot_dict[i] = lineplot_dict[i][0:clip]
 
     sns.set(font_scale=1.2)
+    sns.set(rc={'figure.figsize': (10.0, 6.0)})
     sns.set_style(style='ticks', rc=overide_dict)
     return sns.lineplot(data=df, **lineplot_dict)
 
@@ -114,13 +114,14 @@ def post_process_plt(df: pd.DataFrame,
 
     # Format the y-axis
     ax.yaxis.set_major_formatter(plt.ticker.StrMethodFormatter('{x:,.0f}'))
-    ax.set_ylabel('SBU')
+    ax.set_ylabel('SBUs (System Billing Units)  /  hours')
     ax.set(ylim=(0, y_max))
 
     # Format the x-axis
     i = len(df.index) // 6
     ax.set(xticks=df.index[0::i])
 
-    ax.set_title('Accumulated SBU usage', fontdict={'fontsize': 18})
+    today = date.today().strftime('%d %b %Y')
+    ax.set_title('Accumulated SBU usage: {}'.format(today), fontdict={'fontsize': 18})
     ax.legend_.set_title('Project: SBU')
     return ax.get_figure()

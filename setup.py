@@ -31,7 +31,9 @@ setup(
     package_dir={'sbu': 'sbu'},
     package_data={'sbu': ['data/*.yaml']},
     include_package_data=True,
-    entry_points={'console_scripts': []},
+    entry_points={'console_scripts': [
+        'get_sbu=sbu.entry_points:main_sbu'
+    ]},
     license="GNU General Public License v3 or later",
     zip_safe=False,
     keywords=[

@@ -23,6 +23,7 @@ _GLOBVAR: Dict[str, Tuple[Hashable, Hashable]] = {
     'SBU_REQUESTED': (_SUPER, 'SBU requested')
 }
 
+# The keys of mandatory dataframe columns
 TMP, NAME, ACTIVE, PROJECT, SBU_REQUESTED = sorted(_GLOBVAR.values(), key=len)
 
 
@@ -67,7 +68,7 @@ def yaml_to_pandas(filename: str) -> pd.DataFrame:
 
     Returns
     -------
-    :class:`pandas.DataFrame`:
+    :class:`pandas.DataFrame`
         A Pandas DataFrame constructed from **filename**.
         Columns and rows are instances of :class:`pandas.MultiIndex` and
         :class:`pandas.Index`, respectively.
@@ -127,7 +128,7 @@ def get_sbu(df: pd.DataFrame,
 
     end : :class:`str` or :class:`int`
         Optional: The final year of the interval.
-        Defaults to :code:`start + 1` if ``None``.
+        Defaults to current year + 1 if ``None``.
 
     project : :class:`str`
         Optional: The project code of the project of interest.
@@ -136,7 +137,7 @@ def get_sbu(df: pd.DataFrame,
     """
     # Construct new columns in **df**
     sy, ey = get_date_range(start, end)
-    date_range = pd.date_range(start, end, freq=pd.offsets.MonthBegin(), name='Month')
+    date_range = _get_datetimeindex(sy, ey)
     for i in date_range:
         df[('Month', str(i)[:7])] = np.nan
 
@@ -167,7 +168,7 @@ def get_sbu_per_project(df: pd.DataFrame) -> pd.DataFrame:
 
     Returns
     -------
-    :class:`pandas.DataFrame`:
+    :class:`pandas.DataFrame`
         A new Pandas DataFrame holding the SBU usage per project (*i.e.* **df** [**project**]).
 
     """
@@ -219,7 +220,7 @@ def get_agregated_sbu(df: pd.DataFrame) -> pd.DataFrame:
 
     Returns
     -------
-    :class:`pandas.DataFrame`:
+    :class:`pandas.DataFrame`
         A new Pandas DataFrame with SBU usage accumulated over all columns in the ``"Month"``
         super-column.
 
@@ -275,7 +276,7 @@ def get_percentage_sbu(df: pd.DataFrame) -> pd.DataFrame:
 
     Returns
     -------
-    :class:`pandas.DataFrame`:
+    :class:`pandas.DataFrame`
         A new Pandas DataFrame with % SBU usage accumulated over all columns in the ``"Month"``
         super-column.
 
@@ -303,10 +304,12 @@ def parse_accuse(user: str,
         A username.
 
     start : :class:`str`
-        The starting year of the interval.
+        The starting date of the interval.
+        Accepts dates formatted as YYYY, MM-YYYY or DD-MM-YYYY.
 
     end : :class:`str`
-        The final year of the interval.
+        The final date of the interval.
+        Accepts dates formatted as YYYY, MM-YYYY or DD-MM-YYYY.
 
     project : :class:`str`
         Optional: The project code of the project of interest.
@@ -314,12 +317,12 @@ def parse_accuse(user: str,
 
     Returns
     -------
-    :class:`pandas.DataFrame`:
+    :class:`pandas.DataFrame`
         The SBU usage of **user** over a specified period.
 
     """
     # Acquire SBU usage
-    arg = ['accuse', '-u', user, '-sy', start, '-ey', end]
+    arg = ['accuse', '-u', user, '-s', start, '-e', end]
     usage = check_output(arg).decode('utf-8').splitlines()
 
     # Cast SBU usage into a dataframe
@@ -338,6 +341,26 @@ def parse_accuse(user: str,
     return df_tmp[[user]].T
 
 
+def validate_usernames(df: pd.DataFrame) -> None:
+    """Validate that all users belong to an account are available in the .yaml input file.
+
+    Parameters
+    ----------
+    df : :class:`pandas.DataFrame`
+        A DataFrame, produced by :func:`.yaml_to_pandas`, containing user accounts.
+        :attribute:`pandas.DataFrame.columns` and :attribute:`pandas.DataFrame.index`
+        should be instances of :class:`pandas.MultiIndex` and :class:`pandas.Index`, respectively.
+        User accounts are expected to be stored in :attribute:`pandas.DataFrame.index`.
+
+    Raises
+    ------
+    KeyError
+        Raised if one or more users reported by the ``accinfo`` command are absent from **df**.
+
+    """
+    pass
+
+
 def get_date_range(start: Optional[Union[str, int]] = None,
                    end: Optional[Union[str, int]] = None) -> Tuple[str, str]:
     """Return a starting and ending date as two strings.
@@ -346,22 +369,29 @@ def get_date_range(start: Optional[Union[str, int]] = None,
     ----------
     start : :class:`int` or :class:`str`
         The starting year of the interval.
+        Accepts dates formatted as YYYY, MM-YYYY or DD-MM-YYYY.
         Defaults to the current year if ``None``.
 
     end : :class:`str` or :class:`int`
         The final year of the interval.
-        Defaults to :code:`start + 1` if ``None``.
+        Accepts dates formatted as YYYY, MM-YYYY or DD-MM-YYYY.
+        Defaults to the current year + 1 if ``None``.
 
     Returns
     -------
     :class:`tuple` [:class:`str`, :class:`str`]
-        A tuple with the start and end year, formatted as strings.
+        A tuple with the start and end data, formatted as strings.
+        Dates are formatted as DD-MM-YYYY.
 
     """
     today = date.today()
-    start = start or today.strftime('%Y')
-    end = end or int(today.strftime('%Y')) + 1
-    return str(start), str(end)
+    month = today.strftime('%m')
+    year = today.strftime('%Y')
+
+    start = _parse_date(start, default_month='01', default_year=year)
+    end = _parse_date(end, default_month=month, default_year=year)
+
+    return start, end
 
 
 def construct_filename(prefix: str,
@@ -387,7 +417,7 @@ def construct_filename(prefix: str,
 
     Returns
     -------
-    :class:`str`:
+    :class:`str`
         A filename consisting of **prefix**, the current date and **suffix**.
 
     """
@@ -413,6 +443,14 @@ def update_globals(column_dict: Dict[str, Tuple[Hashable, Hashable]]) -> None:
         * ``"PROJECT"``: ``("info", "project")``
         * ``"SBU_REQUESTED"``: ``("info", "SBU requested")``
 
+    Raises
+    ------
+    TypeError
+        Raised if a value in **column_dict** does not consist of a tuple of hashables.
+
+    ValueError
+        Raised if the length of a value in **column_dict** is not not equal to ``2``.
+
     """
     for k, v in column_dict.items():
         if not isinstance(v, tuple):
@@ -428,6 +466,91 @@ def update_globals(column_dict: Dict[str, Tuple[Hashable, Hashable]]) -> None:
     for k, v in column_dict.items():
         _GLOBVAR[k] = v
     _repopulate_globals()
+
+
+def _get_datetimeindex(sy: str,
+                       ey: str) -> pd.DatetimeIndex:
+    """Create a Pandas DatetimeIndex from a start and end date.
+
+    Parameters
+    ----------
+    sy : :class:`str`
+        The start of the interval.
+        Accepts dates formatted as YYYY, MM-YYYY or DD-MM-YYYY.
+
+    sy : :class:`str`
+        The end of the interval.
+        Accepts dates formatted as YYYY, MM-YYYY or DD-MM-YYYY.
+
+    Returns
+    -------
+    :class:`pandas.DatetimeIndex`
+        A DatetimeIndex starting from **sy** and ending on **ey**.
+
+    """
+    start = '-'.join(reversed(sy.split('-')))
+    end = '-'.join(reversed(ey.split('-')))
+    return pd.date_range(start, end, freq=pd.offsets.MonthBegin(), name='Month')
+
+
+def _parse_date(input_date: Union[str, int, None],
+                default_month: str = '01',
+                default_year: Optional[str] = None) -> str:
+    """Parse any dates supplied to :func:`.get_date_range`.
+
+    Parameters
+    ----------
+    date : :class:`str`, :class:`int` or ``None``
+        The to-be parsed date.
+        Allowed types and values are:
+            * ``None``: Defaults to the first day of the current year and month.
+            * :class:`int`: A year (*e.g.* ``2019``).
+            * :class:`str`: A date in YYYY, MM-YYYY or DD-MM-YYYY format (*e.g.* ``"22-10-2018"``).
+
+    default_month : :class:`str`
+        The default month if a month is not provided in **date**.
+        Expects a month in MM format.
+
+    default_year : :class:`str`
+        Optional: The default year if a year is not provided in **date**.
+        Defaults to the current year if ``None``.
+
+    Returns
+    -------
+    :class:`str`
+        A string, constructed from **date**, representing a date in DD-MM-YYYY format.
+
+    Raises
+    ------
+    ValueError
+        Raised if **input_date** is provided as string and contains more than ``2`` dashes.
+
+    TypeError
+        Raised if **input_date** is neither ``None`` nor a string or integer.
+
+    """
+    if default_year is None:
+        default_year = date.today().strftime('%Y')
+    if default_month is None:
+        default_month = '01'
+
+    if isinstance(input_date, int):
+        return '01-01-{:d}'.format(input_date)
+    elif input_date is None:
+        return '01-{}-{}'.format(default_month, default_year)
+    elif isinstance(input_date, str):
+        dash_count = input_date.count('-')
+        if dash_count == 0:
+            return '01-{}-{}'.format(default_month, input_date)
+        elif dash_count == 1:
+            return '01-{}'.format(input_date)
+        elif dash_count == 2:
+            return input_date
+        else:
+            raise ValueError("'input_date': '{}'".format(input_date))
+    else:
+        err = "Unsupported object type for the 'input_date' argument: '{}'"
+        raise TypeError(err.format(input_date.__class__.__name__))
 
 
 def _get_total_sbu_requested(df: pd.DataFrame) -> float:

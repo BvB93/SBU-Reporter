@@ -13,25 +13,26 @@ palette:
     - [1, 1, 0]
 dashes:
     - []
-    - [4, 2]
+    - [1, 2]
     - []
-    - [4, 2]
+    - [1, 2]
     - []
-    - [4, 2]
+    - [1, 2]
     - []
-    - [4, 2]
+    - [1, 2]
     - []
-    - [4, 2]
+    - [1, 2]
     - []
-    - [4, 2]
+    - [1, 2]
 linewidth: 2
 style: ticks
 markers: [o, o, o, o, o, o, o, o, o, o, o, o]
 markersize: 10
 markeredgecolor: white
-markeredgewidth: 2
+markeredgewidth: 1.5
 antialiased: True
 dash_capstyle: 'round'
+
 style_overide:
     axes.labelcolor: '0.0'
     xtick.color: '0.0'
