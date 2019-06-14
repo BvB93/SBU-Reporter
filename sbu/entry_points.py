@@ -16,7 +16,7 @@ def main_sbu(args: Optional[List[str]] = None) -> None:
     """ """
     parser = argparse.ArgumentParser(
         prog='sbu',
-        usage='get_sbu <filename> --project <projectname> --startyear <YYYY> --endyear <YYYY>',
+        usage='get_sbu <filename> --project <projectname> --start <start> --end <end>',
         description="Generate and parse all SBU information."
     )
 
@@ -28,29 +28,35 @@ def main_sbu(args: Optional[List[str]] = None) -> None:
     parser.add_argument(
         '-p', '--project', type=str, default=[None], required=False, nargs=1, dest='project',
         metavar='<projectname>',
-        help='The starting year of the interval. Defaults to the current year.'
+        help='The name of the project of interest.'
     )
 
     parser.add_argument(
-        '-sy', '--startyear', type=int, default=[None], required=False, nargs=1, dest='startyear',
-        metavar='<YYYY>', help='The starting year of the interval. Defaults to the current year.'
+        '-s', '--start', type=int, default=[None], required=False, nargs=1, dest='start',
+        metavar='<start>',
+        help=('The starting date of the interval. '
+              'Accepts input formatted as YYYY, MM-YYYY or DD-MM-YYYY. '
+              'Defaults to the start of the current year if left empty.')
     )
 
     parser.add_argument(
-        '-ey', '--endyear', type=int, default=[None], required=False, nargs=1, dest='endyear',
-        metavar='<YYYY>', help='The final year of the interval. Defaults to <startyear> + 1.'
+        '-e', '--end', type=int, default=[None], required=False, nargs=1, dest='end',
+        metavar='<end>',
+        help=('The final date of the interval. '
+              'Accepts input formatted as YYYY, MM-YYYY or DD-MM-YYYY. '
+              'Defaults to current date if left empty.')
     )
 
     args_parsed = parser.parse_args(args)
     filename = args_parsed.filename[0]
     project = args_parsed.project[0]
-    startyear = args_parsed.startyear[0]
-    endyear = args_parsed.endyear[0]
+    start = args_parsed.start[0]
+    end = args_parsed.end[0]
 
     if not isfile(filename):
         raise FileNotFoundError("[Errno 2] No such file: '{}'".format(filename))
 
-    sbu_workflow(filename, project, startyear, endyear)
+    sbu_workflow(filename, project, start, end)
 
 
 def sbu_workflow(filename: str,
