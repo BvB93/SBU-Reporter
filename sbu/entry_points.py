@@ -5,6 +5,8 @@ import argparse
 from os.path import isfile
 from typing import (List, Optional)
 
+import matplotlib as plt
+
 import sbu
 
 __all__: list = []
@@ -65,10 +67,10 @@ def sbu_workflow(filename: str,
     df_plot = sbu.pre_process_df(df3)
     ax = sbu.pre_process_plt(df_plot, sbu.lineplot_dict, sbu.style_overide)
     fig = sbu.post_process_plt(df_plot, ax)
-    fig.show()
+    plt.show()
 
     filename = sbu.construct_filename('Cluster_usage', '.{}')
-    fig.save_figure(filename.format('png'))
+    plt.savefig(filename.format('png'))
     df1.to_csv(filename.format('1.csv'))
     df2.to_csv(filename.format('2.csv'))
     df3.to_csv(filename.format('3.csv'))
