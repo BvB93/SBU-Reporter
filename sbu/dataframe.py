@@ -368,7 +368,7 @@ def get_date_range(start: Optional[Union[str, int]] = None,
     month = today.strftime('%m')
     year = str(int(today.strftime('%Y')) + 1)
 
-    start = _parse_date(start)
+    start = _parse_date(start, default_month='01', default_year=year)
     end = _parse_date(end, default_month=month, default_year=year)
 
     return start, end
