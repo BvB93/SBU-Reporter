@@ -87,6 +87,6 @@ def sbu_workflow(filename: str,
         df.loc[''] = np.nan
         df.loc[' '] = np.nan
     df_concat = pd.concat([df1, df2, df3, df4])
-    df_concat.to_excel(file_out.format('xlsx'), inf_rep='', freeze_panes=(2, 3))
+    df_concat.to_excel(file_out.format('xlsx'), inf_rep='', freeze_panes=(2, 1))
 
     plt.show(block=True)
