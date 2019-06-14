@@ -128,7 +128,7 @@ def get_sbu(df: pd.DataFrame,
 
     end : :class:`str` or :class:`int`
         Optional: The final year of the interval.
-        Defaults to :code:`start + 1` if ``None``.
+        Defaults to current year + 1 if ``None``.
 
     project : :class:`str`
         Optional: The project code of the project of interest.
@@ -320,7 +320,7 @@ def parse_accuse(user: str,
 
     """
     # Acquire SBU usage
-    arg = ['accuse', '-u', user, '-sy', start, '-ey', end]
+    arg = ['accuse', '-u', user, '-s', start, '-e', end]
     usage = check_output(arg).decode('utf-8').splitlines()
 
     # Cast SBU usage into a dataframe
@@ -347,11 +347,12 @@ def get_date_range(start: Optional[Union[str, int]] = None,
     ----------
     start : :class:`int` or :class:`str`
         The starting year of the interval.
+        If a string is
         Defaults to the current year if ``None``.
 
     end : :class:`str` or :class:`int`
         The final year of the interval.
-        Defaults to :code:`start + 1` if ``None``.
+        Defaults to the current year + 1 if ``None``.
 
     Returns
     -------
@@ -360,9 +361,13 @@ def get_date_range(start: Optional[Union[str, int]] = None,
 
     """
     today = date.today()
-    start = start or today.strftime('%Y')
-    end = end or int(today.strftime('%Y')) + 1
-    return str(start), str(end)
+    month = today.strftime('%m')
+    year = str(int(today.strftime('%Y') + 1))
+
+    start = _parse_date(start)
+    end = _parse_date(end, default_month=month, default_year=year)
+
+    return start, end
 
 
 def construct_filename(prefix: str,
@@ -429,6 +434,60 @@ def update_globals(column_dict: Dict[str, Tuple[Hashable, Hashable]]) -> None:
     for k, v in column_dict.items():
         _GLOBVAR[k] = v
     _repopulate_globals()
+
+
+def _parse_date(date: Union[str, int, None],
+                default_month: str = '01',
+                default_year: Optional[str] = None) -> str:
+    """Parse any dates supplied to :func:`.get_date_range`.
+
+    Parameters
+    ----------
+    date : :class:`str`, :class:`int` or ``None``
+        The to-be parsed date.
+        Allowed types and values are:
+            * ``None``: Defaults to the first day of the current year and month.
+            * :class:`int`: A year (*e.g.* ``2019``).
+            * :class:`str`: A date in YYYY, MM-YYYY or DD-MM-YYYY format (*e.g.* ``"22-10-2018"``).
+
+    default_month : :class:`str`
+        The default month if a month is not provided in **date**.
+        Expects a month in MM format.
+
+    default_year : :class:`str`
+        Optional: The default year if a year is not provided in **date**.
+        Defaults to the current year if ``None``.
+
+    Returns
+    -------
+    :class:`str`:
+        A string, constructed from **date**, representing a date in DD-MM-YYYY format.
+
+    """
+    if default_year is None:
+        default_year = date.today().strftime('%Y')
+    if default_month is None:
+        default_month = '01'
+
+    if isinstance(date, int):
+        ret = '01-01-{:d}'.format(date)
+    elif date is None:
+        ret = '01-{}-{}'.format(default_month, default_year)
+    elif isinstance(date, str):
+        dash_count = date.count('-')
+        if dash_count == 0:
+            ret = '01-{}-{}'.format(default_month, date)
+        elif dash_count == 1:
+            ret = '01-{}'.format(date)
+        elif dash_count == 2:
+            ret = date
+        else:
+            raise ValueError("'date': '{}'".format(date))
+    else:
+        err = "Unsupported object type for the 'date' argument: '{}'"
+        raise TypeError(err.format(date.__class__.__name__))
+
+    return ret
 
 
 def _get_total_sbu_requested(df: pd.DataFrame) -> float:
