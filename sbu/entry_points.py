@@ -10,7 +10,7 @@ import sbu
 __all__: list = []
 
 
-def main_sbu(args: List[str]) -> None:
+def main_sbu(args: Optional[List[str]] = None) -> None:
     """ """
     parser = argparse.ArgumentParser(
         prog='sbu',
