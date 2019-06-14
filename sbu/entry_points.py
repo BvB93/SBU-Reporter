@@ -14,28 +14,29 @@ def main_sbu(args: Optional[List[str]] = None) -> None:
     """ """
     parser = argparse.ArgumentParser(
         prog='sbu',
-        usage='get_sbu filename -sy StartYear -ey EndYear',
+        usage='get_sbu <filename> --project <project_name> --startyear <YYYY> --endyear <YYYY>',
         description="Generate and parse all SBU information."
     )
 
     parser.add_argument(
-        'filename', nargs=1, type=str, help='A .yaml file with project and account information.'
+        'filename', nargs=1, type=str, metavar='<filename>',
+        help='A .yaml file with project and account information.'
     )
 
     parser.add_argument(
         '-p', '--project', type=str, default=None, required=False, nargs=1, dest='project',
-        metavar='PROJECT_NAME',
+        metavar='<project_name>',
         help='The starting year of the interval. Defaults to the current year.'
     )
 
     parser.add_argument(
         '-sy', '--startyear', type=int, default=None, required=False, nargs=1, dest='startyear',
-        metavar='YYYY', help='The starting year of the interval. Defaults to the current year.'
+        metavar='<YYYY>', help='The starting year of the interval. Defaults to the current year.'
     )
 
     parser.add_argument(
         '-ey', '--endyear', type=int, default=None, required=False, nargs=1, dest='endyear',
-        metavar='YYYY', help='The final year of the interval. Defaults to STARTYEAR + 1.'
+        metavar='<YYYY>', help='The final year of the interval. Defaults to STARTYEAR + 1.'
     )
 
     args_parsed = parser.parse_args(args)
