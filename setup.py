@@ -53,7 +53,8 @@ setup(
         'numpy',
         'pandas',
         'matplotlib',
-        'seaborn'
+        'seaborn',
+        'openpyxl'
     ],
     setup_requires=[
         'pytest-runner',
