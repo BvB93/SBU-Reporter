@@ -5,7 +5,7 @@ import argparse
 from os.path import isfile
 from typing import (List, Optional)
 
-import matplotlib as plt
+import matplotlib.pyplot as plt
 
 import sbu
 
@@ -67,7 +67,6 @@ def sbu_workflow(filename: str,
     df_plot = sbu.pre_process_df(df3)
     ax = sbu.pre_process_plt(df_plot, sbu.lineplot_dict, sbu.style_overide)
     fig = sbu.post_process_plt(df_plot, ax)
-    plt.show()
 
     filename = sbu.construct_filename('Cluster_usage', '.{}')
     plt.savefig(filename.format('png'))
@@ -75,3 +74,5 @@ def sbu_workflow(filename: str,
     df2.to_csv(filename.format('2.csv'))
     df3.to_csv(filename.format('3.csv'))
     df4.to_csv(filename.format('4.csv'))
+
+    plt.show(block=True)
