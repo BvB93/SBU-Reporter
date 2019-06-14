@@ -264,9 +264,9 @@ def get_percentage_sbu(df: pd.DataFrame) -> pd.DataFrame:
         >>> print(df_new['Month'])
                         2019-01  2019-02  2019-03
         username
-        Donald Duck        31.0     77.0    100.0
-        Scrooge McDuck     20.0     30.0     35.0
-        Mickey Mouse       20.0    120.0    200.0
+        Donald Duck        0.31     0.77     1.00
+        Scrooge McDuck     0.20     0.30     0.35
+        Mickey Mouse       0.20     1.20     2.00
 
     Parameters
     ----------
@@ -285,8 +285,7 @@ def get_percentage_sbu(df: pd.DataFrame) -> pd.DataFrame:
     """
     ret = df.copy()
     ret['Month'] /= ret[SBU_REQUESTED][:, None]
-    ret['Month'] *= 100
-    ret['Month'] = ret['Month'].round()
+    ret['Month'] = ret['Month'].round(2)
     return ret
 
 
@@ -579,7 +578,7 @@ def _parse_date(input_date: Union[str, int, None],
 def _get_total_sbu_requested(df: pd.DataFrame) -> float:
     """Return the total number of requested SBUs."""
     slice_ = df[SBU_REQUESTED]
-    return slice_.groupby(slice_.index).aggregate(sum).sum()
+    return slice_.groupby(df[SBU_REQUESTED]).aggregate(sum).sum()
 
 
 def _get_active_name(df: pd.DataFrame,
