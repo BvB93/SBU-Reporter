@@ -495,11 +495,11 @@ def _get_datetimeindex(start: str,
 
     Parameters
     ----------
-    sy : :class:`str`
+    start : :class:`str`
         The start of the interval.
         Accepts dates formatted as DD-MM-YYYY.
 
-    sy : :class:`str`
+    end : :class:`str`
         The end of the interval.
         Accepts dates formatted as DD-MM-YYYY.
 
