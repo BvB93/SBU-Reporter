@@ -39,6 +39,7 @@ extensions = [
     'sphinx_autodoc_typehints',
     'sphinx.ext.intersphinx',
     'sphinx.ext.viewcode',
+    'sphinx.ext.autosummary',
     'matplotlib.sphinxext.plot_directive'
 ]
 
