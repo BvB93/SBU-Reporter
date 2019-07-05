@@ -1,5 +1,24 @@
 #!/usr/bin/env python
-"""Entry points for SBU-Reporter."""
+"""
+sbu.entry_points
+================
+
+Entry points for SBU-Reporter.
+
+Index
+-----
+.. currentmodule:: sbu.entry_points
+.. autosummary::
+
+    main_sbu
+    sbu_workflow
+
+API
+---
+.. autofunction:: sbu.entry_points.main_sbu
+.. autofunction:: sbu.entry_points.sbu_workflow
+
+"""
 
 import argparse
 from os.path import isfile
@@ -66,18 +85,21 @@ def sbu_workflow(filename: str,
                  start: Optional[int],
                  end: Optional[int]) -> None:
     """ """
+    # Generate the dataframes
     df1 = sbu.yaml_to_pandas(filename)
     sbu.get_sbu(df1, start, end, project)
     df2 = sbu.get_sbu_per_project(df1)
     df3 = sbu.get_agregated_sbu(df2)
     df4 = sbu.get_percentage_sbu(df3)
 
+    # Create export figures (.png)
     file_out = sbu.construct_filename('Cluster_usage', '.{}')
     df_plot = sbu.pre_process_df(df3)
     ax = sbu.pre_process_plt(df_plot, sbu.lineplot_dict, sbu.style_overide)
     fig = sbu.post_process_plt(df_plot, ax)
     plt.savefig(file_out.format('png'), dpi=300, format='png', quality=100, transparent=True)
 
+    # Create and export spreadsheets (.xlsx)
     for df in (df2, df3, df4):
         df[('info', 'active')] = [', '.join(i) for i in df[('info', 'active')]]
     for df in (df1, df2, df3, df4):
