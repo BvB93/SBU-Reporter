@@ -1,4 +1,25 @@
-"""A module for handling data plotting."""
+"""
+sbu.plot
+========
+
+A module for handling data plotting.
+
+Index
+-----
+.. currentmodule:: sbu.plot
+.. autosummary::
+
+    pre_process_df
+    pre_process_plt
+    post_process_plt
+
+API
+---
+.. autofunction:: sbu.plot.pre_process_df
+.. autofunction:: sbu.plot.pre_process_plt
+.. autofunction:: sbu.plot.post_process_plt
+
+"""
 
 from datetime import date
 from typing import (Tuple, Dict, Any, Optional)

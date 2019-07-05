@@ -1,4 +1,49 @@
-"""A module which handles data parsing and DataFrame construction."""
+"""
+sbu.dataframe
+=============
+
+A module which handles data parsing and DataFrame construction.
+
+Index
+-----
+.. currentmodule:: sbu.dataframe
+.. autosummary::
+
+    yaml_to_pandas
+    get_sbu
+    get_sbu_per_project
+    get_agregated_sbu
+    get_percentage_sbu
+    parse_accuse
+    get_date_range
+    validate_usernames
+    construct_filename
+    update_globals
+    _get_datetimeindex
+    _parse_date
+    _get_total_sbu_requested
+    _get_active_name
+    _repopulate_globals
+
+API
+---
+.. autofunction:: sbu.dataframe.yaml_to_pandas
+.. autofunction:: sbu.dataframe.get_sbu
+.. autofunction:: sbu.dataframe.get_sbu_per_project
+.. autofunction:: sbu.dataframe.get_agregated_sbu
+.. autofunction:: sbu.dataframe.get_percentage_sbu
+.. autofunction:: sbu.dataframe.parse_accuse
+.. autofunction:: sbu.dataframe.get_date_range
+.. autofunction:: sbu.dataframe.validate_usernames
+.. autofunction:: sbu.dataframe.construct_filename
+.. autofunction:: sbu.dataframe.update_globals
+.. autofunction:: sbu.dataframe._get_datetimeindex
+.. autofunction:: sbu.dataframe._parse_date
+.. autofunction:: sbu.dataframe._get_total_sbu_requested
+.. autofunction:: sbu.dataframe._get_active_name
+.. autofunction:: sbu.dataframe._repopulate_globals
+
+"""
 
 from subprocess import check_output
 from datetime import date
