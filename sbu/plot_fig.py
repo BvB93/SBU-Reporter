@@ -139,7 +139,7 @@ def post_process_plt(df: pd.DataFrame, ax: plt.axes.Axes) -> plt.figure.Figure:
     ax.set(ylim=(0, y_max))
 
     # Format the x-axis
-    i = len(df.index) // 6
+    i = len(df.index) // 6 or 1
     ax.set(xticks=df.index[0::i])
 
     today = date.today().strftime('%d %b %Y')
