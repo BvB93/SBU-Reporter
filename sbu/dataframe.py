@@ -8,149 +8,44 @@ Index
 -----
 .. currentmodule:: sbu.dataframe
 .. autosummary::
-
-    yaml_to_pandas
     get_sbu
-    get_sbu_per_project
-    get_agregated_sbu
-    get_percentage_sbu
     parse_accuse
     get_date_range
-    validate_usernames
     construct_filename
-    update_globals
     _get_datetimeindex
     _parse_date
     _get_total_sbu_requested
     _get_active_name
-    _repopulate_globals
 
 API
 ---
-.. autofunction:: sbu.dataframe.yaml_to_pandas
-.. autofunction:: sbu.dataframe.get_sbu
-.. autofunction:: sbu.dataframe.get_sbu_per_project
-.. autofunction:: sbu.dataframe.get_agregated_sbu
-.. autofunction:: sbu.dataframe.get_percentage_sbu
-.. autofunction:: sbu.dataframe.parse_accuse
-.. autofunction:: sbu.dataframe.get_date_range
-.. autofunction:: sbu.dataframe.validate_usernames
-.. autofunction:: sbu.dataframe.construct_filename
-.. autofunction:: sbu.dataframe.update_globals
-.. autofunction:: sbu.dataframe._get_datetimeindex
-.. autofunction:: sbu.dataframe._parse_date
-.. autofunction:: sbu.dataframe._get_total_sbu_requested
-.. autofunction:: sbu.dataframe._get_active_name
-.. autofunction:: sbu.dataframe._repopulate_globals
+.. autofunction:: get_sbu
+.. autofunction:: parse_accuse
+.. autofunction:: get_date_range
+.. autofunction:: construct_filename
+.. autofunction:: _get_datetimeindex
+.. autofunction:: _parse_date
+.. autofunction:: _get_total_sbu_requested
+.. autofunction:: _get_active_name
 
 """
 
 from subprocess import check_output
 from datetime import date
-from typing import (Tuple, Optional, Union, Hashable, Any, Dict)
+from typing import Tuple, Optional, Union
 
-import yaml
 import numpy as np
 import pandas as pd
 
+from sbu.globvar import ACTIVE, PROJECT, SBU_REQUESTED
+
 __all__ = [
-    'yaml_to_pandas', 'get_date_range', 'construct_filename', 'get_sbu', 'get_sbu_per_project',
-    'get_agregated_sbu', 'get_percentage_sbu', 'update_globals', 'parse_accuse',
-    'validate_usernames'
+    'get_date_range', 'construct_filename', 'get_sbu', 'parse_accuse'
 ]
 
-# Define mandatory columns
-_SUPER: str = 'info'
-_GLOBVAR: Dict[str, Tuple[Hashable, Hashable]] = {
-    'TMP': (_SUPER, 'tmp'),
-    'NAME': (_SUPER, 'name'),
-    'ACTIVE': (_SUPER, 'active'),
-    'PROJECT': (_SUPER, 'project'),
-    'SBU_REQUESTED': (_SUPER, 'SBU requested')
-}
 
-# The keys of mandatory dataframe columns
-TMP, NAME, ACTIVE, PROJECT, SBU_REQUESTED = sorted(_GLOBVAR.values(), key=len)
-
-
-def yaml_to_pandas(filename: str) -> pd.DataFrame:
-    """Create a Pandas DataFrame out of a .yaml file.
-
-    Examples
-    --------
-    Example yaml input:
-
-    .. code::
-
-        A:
-            description: Example project
-            PI: Walt Disney
-            SBU requested: 1000
-            users:
-                user1: Donald Duck
-                user2: Scrooge McDuck
-                user3: Mickey Mouse
-
-    Example output:
-
-    .. code:: python
-
-        >>> df = yaml_to_pandas(filename)
-        >>> print(type(df))
-        <class 'pandas.core.frame.DataFrame'>
-
-        >>> print(df)
-                    info                  ...
-                 project            name  ... SBU requested           PI
-        username                          ...
-        user1          A     Donald Duck  ...        1000.0  Walt Disney
-        user2          A  Scrooge McDuck  ...        1000.0  Walt Disney
-        user3          A    Mickey Mouse  ...        1000.0  Walt Disney
-
-    Parameters
-    ----------
-    filename : :class:`str`
-        The path+filename to the .yaml file.
-
-    Returns
-    -------
-    :class:`pandas.DataFrame`
-        A Pandas DataFrame constructed from **filename**.
-        Columns and rows are instances of :class:`pandas.MultiIndex` and
-        :class:`pandas.Index`, respectively.
-        All retrieved .yaml data is stored under the ``"info"`` super-column.
-
-    """
-    # Read the yaml file
-    with open(filename, 'r') as f:
-        dict_ = yaml.load(f, Loader=yaml.Loader)
-
-    # Convert the yaml dictionary into a dataframe
-    data: Dict[str, Dict[Tuple[Hashable, Hashable], Any]] = {}
-    for k1, v1 in dict_.items():
-        for k2, v2 in v1['users'].items():
-            data[k2] = {('info', k): v for k, v in v1.items() if k != 'users'}
-            data[k2][NAME] = v2
-            data[k2][PROJECT] = k1
-    df = pd.DataFrame(data).T
-
-    # Fortmat, sort and return the dataframe
-    df.index.name = 'username'
-    df[SBU_REQUESTED] = df[SBU_REQUESTED].astype(float)
-    df[TMP] = df.index
-    df.sort_values(by=[PROJECT, TMP], inplace=True)
-    df.sort_index(axis=1, inplace=True, ascending=False)
-    del df[TMP]
-    df[ACTIVE] = False
-
-    validate_usernames(df)
-    return df
-
-
-def get_sbu(df: pd.DataFrame,
-            start: Optional[int] = None,
-            end: Optional[int] = None,
-            project: Optional[str] = None) -> None:
+def get_sbu(df: pd.DataFrame, start: Optional[int] = None,
+            end: Optional[int] = None, project: Optional[str] = None) -> None:
     """Acquire the SBU usage for each account in the :attr:`pandas.DataFrame.index`.
 
     The start and end of the reported interval can, optionally, be altered with **start**
@@ -203,141 +98,7 @@ def get_sbu(df: pd.DataFrame,
     df.loc[df[('Month', 'sum')] > 1.0, ACTIVE] = True
 
 
-def get_sbu_per_project(df: pd.DataFrame) -> pd.DataFrame:
-    """Construct a new Pandas DataFrame with SBU usage per project.
-
-    Parameters
-    ----------
-    df : :class:`pandas.DataFrame`
-        A Pandas DataFrame with SBU usage per username, constructed by :func:`get_sbu`.
-        :attr:`pandas.DataFrame.columns` and :attr:`pandas.DataFrame.index` should be
-        instances of :class:`pandas.MultiIndex` and :class:`pandas.Index`, respectively.
-
-    Returns
-    -------
-    :class:`pandas.DataFrame`
-        A new Pandas DataFrame holding the SBU usage per project (*i.e.* **df** [**project**]).
-
-    """
-    df_tmp = df.set_index(PROJECT, inplace=False)
-    df_tmp.index.name = 'project'
-
-    dict_ = {i: ['first' if i[0] == 'info' else sum] for i in df_tmp}
-    ret = df_tmp.groupby(df_tmp.index).aggregate(dict_)
-    ret.columns = ret.columns.droplevel(2)
-    ret[ACTIVE] = [_get_active_name(df_tmp, i) for i in ret.index]
-    del ret[NAME]
-    return ret
-
-
-def get_agregated_sbu(df: pd.DataFrame) -> pd.DataFrame:
-    """Calculate the SBU accumulated over all months in the ``"Month"`` super-column.
-
-    Examples
-    --------
-    Considering the following DataFrame as input:
-
-    .. code:: python
-
-        >>> print(df['Month'])
-                        2019-01  2019-02  2019-03
-        username
-        Donald Duck      1000.0   1500.0    750.0
-        Scrooge McDuck   1000.0    500.0    250.0
-        Mickey Mouse     1000.0   5000.0   4000.0
-
-    Which will be accumulated along each column in the following manner:
-
-    .. code:: python
-
-        >>> df_new = get_agregated_sbu(df)
-        >>> print(df_new['Month'])
-                        2019-01  2019-02  2019-03
-        username
-        Donald Duck      1000.0   2500.0   3250.0
-        Scrooge McDuck   1000.0   1500.0   1750.0
-        Mickey Mouse     1000.0   6000.0  10000.0
-
-    Parameters
-    ----------
-    df : :class:`pandas.DataFrame`
-        A Pandas DataFrame with SBU usage per project, constructed by :func:`get_sbu_per_project`.
-        :attr:`pandas.DataFrame.columns` and :attr:`pandas.DataFrame.index` should be
-        instances of :class:`pandas.MultiIndex` and :class:`pandas.Index`, respectively.
-
-    Returns
-    -------
-    :class:`pandas.DataFrame`
-        A new Pandas DataFrame with SBU usage accumulated over all columns in the ``"Month"``
-        super-column.
-
-    """
-    SUM = ('Month', 'sum')
-    ret = df.copy()
-
-    del ret[SUM]
-    ret['Month'] = np.cumsum(ret['Month'], axis=1)
-    ret[SUM] = ret['Month'].iloc[:, -1]
-    return ret
-
-
-def get_percentage_sbu(df: pd.DataFrame) -> pd.DataFrame:
-    """Calculate the % accumulated SBU usage per project.
-
-    The column storing the requested amount of SBUs can be defined in the global variable
-    ``_GLOBVAR["SBU_REQUESTED"]`` (default value: ``("info", "SBU requested")``).
-
-    Examples
-    --------
-    Considering the following DataFrame with accumulated SBUs as input:
-
-    .. code:: python
-
-        >>> print(df)
-                                info   Month
-                       SBU requested 2019-01 2019-02  2019-03
-        username
-        Donald Duck           3250.0  1000.0  2500.0   3250.0
-        Scrooge McDuck        5000.0  1000.0  1500.0   1750.0
-        Mickey Mouse          5000.0  1000.0  6000.0  10000.0
-
-    Which will result in the following SBU usage:
-
-    .. code:: python
-
-        >>> df_new = get_percentage_sbu(df)
-        >>> print(df_new['Month'])
-                        2019-01  2019-02  2019-03
-        username
-        Donald Duck        0.31     0.77     1.00
-        Scrooge McDuck     0.20     0.30     0.35
-        Mickey Mouse       0.20     1.20     2.00
-
-    Parameters
-    ----------
-    df : :class:`pandas.DataFrame`
-        A Pandas DataFrame with the accumulated SBU usage per project,
-        constructed by :func:`get_agregated_sbu`.
-        :attr:`pandas.DataFrame.columns` and :attr:`pandas.DataFrame.index` should be
-        instances of :class:`pandas.MultiIndex` and :class:`pandas.Index`, respectively.
-
-    Returns
-    -------
-    :class:`pandas.DataFrame`
-        A new Pandas DataFrame with % SBU usage accumulated over all columns in the ``"Month"``
-        super-column.
-
-    """
-    ret = df.copy()
-    ret['Month'] /= ret[SBU_REQUESTED][:, None]
-    ret['Month'] = ret['Month'].round(2)
-    return ret
-
-
-def parse_accuse(user: str,
-                 start: str,
-                 end: str,
-                 project: Optional[str] = None) -> pd.DataFrame:
+def parse_accuse(user: str, start: str, end: str, project: Optional[str] = None) -> pd.DataFrame:
     """Gather SBU usage of a specific user account.
 
     The bash command ``accuse`` is used for gathering SBU usage along an interval defined
@@ -386,42 +147,6 @@ def parse_accuse(user: str,
     return df_tmp[[user]].T
 
 
-def validate_usernames(df: pd.DataFrame) -> None:
-    """Validate that all users belonging to an account are available in the .yaml input file.
-
-    Raises a KeyErro If one or more usernames printed by the ``accinfo`` comand are absent from
-    **df**.
-
-    Parameters
-    ----------
-    df : :class:`pandas.DataFrame`
-        A DataFrame, produced by :func:`.yaml_to_pandas`, containing user accounts.
-        :attr:`pandas.DataFrame.columns` and :attr:`pandas.DataFrame.index`
-        should be instances of :class:`pandas.MultiIndex` and :class:`pandas.Index`, respectively.
-        User accounts are expected to be stored in :attr:`pandas.DataFrame.index`.
-
-    Raises
-    ------
-    KeyError
-        Raised if one or more users reported by the ``accinfo`` command are absent from **df**.
-
-    """
-    usage = check_output(['accinfo']).decode('utf-8').splitlines()
-    usage_gen = (i for i in usage)
-    for i in usage_gen:
-        if 'User' in i and 'Group' in i:
-            next(usage_gen)
-            usage = np.array([j.split()[0] for j in usage_gen])
-            break
-
-    bool_ar = np.isin(usage, df.index)
-    if bool_ar.all():
-        return
-    else:
-        err = 'The following users are absent from the .yaml input file: {}'
-        raise KeyError(err.format(usage[~bool_ar]))
-
-
 def get_date_range(start: Optional[Union[str, int]] = None,
                    end: Optional[Union[str, int]] = None) -> Tuple[str, str]:
     """Return a starting and ending date as two strings.
@@ -455,8 +180,7 @@ def get_date_range(start: Optional[Union[str, int]] = None,
     return start, end
 
 
-def construct_filename(prefix: str,
-                       suffix: Optional[str] = '.csv') -> str:
+def construct_filename(prefix: str, suffix: Optional[str] = '.csv') -> str:
     """Construct a filename containing the current date.
 
     Examples
@@ -487,54 +211,7 @@ def construct_filename(prefix: str,
     return prefix + today.strftime('_%d_%b_%Y') + suffix
 
 
-def update_globals(column_dict: Dict[str, Tuple[Hashable, Hashable]]) -> None:
-    """Update the column names stored in the global variable ``_GLOBVAR``.
-
-    Parameters
-    ----------
-    column_dict: :class:`dict` [:class:`str`, :class:`tuple` [:class:`Hashable`, :class:`Hashable`]]
-        A dictionary which maps column names, present in ``_GLOBVAR``, to new values.
-        Tuples, consisting of two hashables,
-        are expected as values (*e.g.* ``("info", "new_name")``).
-        The following keys (and default values) are available in ``_GLOBVAR``:
-
-        ===================== ==============================
-         Key                   Value
-        ===================== ==============================
-         ``"TMP"``             ``("info", "tmp")``
-         ``"NAME"``            ``("info", "name")``
-         ``"ACTIVE"``          ``("info", "active")``
-         ``"PROJECT"``         ``("info", "project")``
-         ``"SBU_REQUESTED"``   ``("info", "SBU requested")``
-        ===================== ==============================
-
-    Raises
-    ------
-    TypeError
-        Raised if a value in **column_dict** does not consist of a tuple of hashables.
-
-    ValueError
-        Raised if the length of a value in **column_dict** is not equal to ``2``.
-
-    """
-    for k, v in column_dict.items():
-        if not isinstance(v, tuple):
-            err = "Invalid type: '{}'. A 'tuple' consisting of two hashables was expected."
-            raise TypeError(err.format(v.__class__.__name__))
-        elif len(v) != 2:
-            err = "Invalid tuple length: '{:d}'. '2' hashables were expected."
-            raise ValueError(err.format(len(v)))
-        elif not isinstance(v[0], Hashable) or not isinstance(v[1], Hashable):
-            err = "Invalid type: '{}'. A hashable was expected."
-            raise TypeError(err.format(v.__class__.__name__))
-
-    for k, v in column_dict.items():
-        _GLOBVAR[k] = v
-    _repopulate_globals()
-
-
-def _get_datetimeindex(start: str,
-                       end: str) -> pd.DatetimeIndex:
+def _get_datetimeindex(start: str, end: str) -> pd.DatetimeIndex:
     """Create a Pandas DatetimeIndex from a start and end date.
 
     Parameters
@@ -623,24 +300,3 @@ def _get_total_sbu_requested(df: pd.DataFrame) -> float:
     """Return the total number of requested SBUs."""
     slice_ = df[SBU_REQUESTED]
     return slice_.groupby(df[SBU_REQUESTED]).aggregate(sum).sum()
-
-
-def _get_active_name(df: pd.DataFrame,
-                     index: Hashable) -> Tuple[str]:
-    """Return a tuple with the names of all active users."""
-    if index == 'sum':
-        return ()
-    slice_ = df.loc[index, NAME]
-    condition = df.loc[index, ACTIVE] == True  # noqa
-    return tuple(slice_[condition].tolist())
-
-
-def _repopulate_globals() -> None:
-    """Update the all globally defined column names based on the content of ``_GLOBVAR``."""
-    global TMP
-    global NAME
-    global ACTIVE
-    global PROJECT
-    global SBU_REQUESTED
-
-    TMP, NAME, ACTIVE, PROJECT, SBU_REQUESTED = sorted(_GLOBVAR.values(), key=len)

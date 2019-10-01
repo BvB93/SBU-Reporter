@@ -2,14 +2,17 @@
 
 from .__version__ import __version__
 
-from .data import (lineplot_dict, style_overide)
+from .data import lineplot_dict, style_overide
 
-from .plot import (pre_process_df, pre_process_plt, post_process_plt)
+from .parse_yaml import yaml_to_pandas, validate_usernames
 
-from .dataframe import (
-    yaml_to_pandas, get_date_range, construct_filename, get_sbu, get_sbu_per_project,
-    get_agregated_sbu, get_percentage_sbu, update_globals, parse_accuse, validate_usernames
-)
+from .plot_fig import pre_process_df, pre_process_plt, post_process_plt
+
+from .dataframe import get_date_range, construct_filename, get_sbu, parse_accuse
+
+from .dataframe_postprocess import get_sbu_per_project, get_agregated_sbu, get_percentage_sbu
+
+from .globvar import update_globals, ACTIVE, NAME, PROJECT, SBU_REQUESTED, TMP
 
 __version__ = __version__
 __author__ = "B. F. van Beek"
@@ -18,9 +21,14 @@ __email__ = 'b.f.van.beek@vu.nl'
 __all__ = [
     'lineplot_dict', 'style_overide',
 
-    'pre_process_df', 'pre_process_plt', 'post_process_plt' ,
+    'yaml_to_pandas', 'validate_usernames',
 
-    'yaml_to_pandas', 'get_date_range', 'construct_filename', 'get_sbu', 'get_sbu_per_project',
-    'get_agregated_sbu', 'get_percentage_sbu', 'update_globals', 'parse_accuse',
-    'validate_usernames'
+    'pre_process_df', 'pre_process_plt', 'post_process_plt',
+
+    'get_date_range', 'construct_filename', 'get_sbu', 'parse_accuse',
+
+    'get_sbu_per_project', 'get_agregated_sbu', 'get_percentage_sbu',
+
+    'update_globals', 'ACTIVE', 'NAME', 'PROJECT', 'SBU_REQUESTED', 'TMP'
 ]
+

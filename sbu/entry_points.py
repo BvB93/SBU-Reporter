@@ -9,14 +9,13 @@ Index
 -----
 .. currentmodule:: sbu.entry_points
 .. autosummary::
-
     main_sbu
     sbu_workflow
 
 API
 ---
-.. autofunction:: sbu.entry_points.main_sbu
-.. autofunction:: sbu.entry_points.sbu_workflow
+.. autofunction:: main_sbu
+.. autofunction:: sbu_workflow
 
 """
 
@@ -29,8 +28,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 import sbu
-
-__all__: list = []
 
 
 def main_sbu(args: Optional[List[str]] = None) -> None:
@@ -80,10 +77,8 @@ def main_sbu(args: Optional[List[str]] = None) -> None:
     sbu_workflow(filename, project, start, end)
 
 
-def sbu_workflow(filename: str,
-                 project: Optional[str],
-                 start: Optional[int],
-                 end: Optional[int]) -> None:
+def sbu_workflow(filename: str, project: Optional[str],
+                 start: Optional[int], end: Optional[int]) -> None:
     """ """
     # Generate the dataframes
     df1 = sbu.yaml_to_pandas(filename)
@@ -91,9 +86,9 @@ def sbu_workflow(filename: str,
     df2 = sbu.get_sbu_per_project(df1)
     df3 = sbu.get_agregated_sbu(df2)
     df4 = sbu.get_percentage_sbu(df3)
+    file_out = sbu.construct_filename('Cluster_usage', '.{}')
 
     # Create export figures (.png)
-    file_out = sbu.construct_filename('Cluster_usage', '.{}')
     df_plot = sbu.pre_process_df(df3)
     ax = sbu.pre_process_plt(df_plot, sbu.lineplot_dict, sbu.style_overide)
     fig = sbu.post_process_plt(df_plot, ax)
