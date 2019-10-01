@@ -109,8 +109,7 @@ def pre_process_plt(df: pd.DataFrame,
     return sns.lineplot(data=df, **lineplot_dict)
 
 
-def post_process_plt(df: pd.DataFrame,
-                     ax: plt.axes.Axes) -> plt.figure.Figure:
+def post_process_plt(df: pd.DataFrame, ax: plt.axes.Axes) -> plt.figure.Figure:
     """Post-process the Matplotlib Axes instance produced by :func:`pre_process_plt`.
 
     The post-processing invovles further formatting of the legend, the x-axis and the y-axis.
