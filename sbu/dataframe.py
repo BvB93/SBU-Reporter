@@ -136,7 +136,7 @@ def yaml_to_pandas(filename: str) -> pd.DataFrame:
 
     # Fortmat, sort and return the dataframe
     df.index.name = 'username'
-    df[SBU_REQUESTED] /= pd.offsets.Hour(1)
+    df[SBU_REQUESTED] = df[SBU_REQUESTED].astype(float)
     df[TMP] = df.index
     df.sort_values(by=[PROJECT, TMP], inplace=True)
     df.sort_index(axis=1, inplace=True, ascending=False)
