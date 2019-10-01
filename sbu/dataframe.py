@@ -83,13 +83,9 @@ def get_sbu(df: pd.DataFrame, start: Optional[int] = None,
     for i in date_range:
         df[('Month', str(i)[:7])] = np.nan
 
-    for u in df.index:
-        df_tmp = parse_accuse(u, sy, ey, project)
-        try:
-            df.update(df_tmp)
-        except:
-            import pdb; pdb.set_trace()
-            pass
+    for user in df.index:
+        df_user = parse_accuse(user, sy, ey, project)
+        df.update(df_user)
 
     # Calculate SBU sums
     SUM = ('Month', 'sum')
