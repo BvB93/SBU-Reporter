@@ -380,8 +380,8 @@ def parse_accuse(user: str,
         df_tmp.drop(df_tmp.index[df_tmp['Account'] != project], inplace=True)
 
     # Parse the actual SBU's
-    df_tmp["SBU's"] /= np.timedelta64(1, 's')  # pylint: disable=too-many-function-args
-    df_tmp['Restituted'] /= np.timedelta64(1, 's')  # pylint: disable=too-many-function-args
+    df_tmp["SBU's"] = pd.to_timedelta(df_tmp["SBU's"])
+    df_tmp['Restituted'] = pd.to_timedelta(df_tmp["Restituted"])
     df_tmp[user] = df_tmp["SBU's"] - df_tmp['Restituted']
     df_tmp[user] /= 60**2
     return df_tmp[[user]].T
