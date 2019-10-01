@@ -33,7 +33,7 @@ _GLOBVAR: Dict[str, Tuple[Hashable, Hashable]] = {
 }
 
 # The keys of mandatory dataframe columns
-ACTIVE, NAME, PROJECT, SBU_REQUESTED, TMP = sorted(_GLOBVAR.values())
+ACTIVE, NAME, PROJECT, SBU_REQUESTED, TMP = sorted(_GLOBVAR.values(), key=lambda n: n[-1].lower())
 
 
 def update_globals(column_dict: Dict[str, Tuple[Hashable, Hashable]]) -> None:
@@ -89,4 +89,6 @@ def _populate_globals() -> None:
     global PROJECT
     global SBU_REQUESTED
 
-    ACTIVE, NAME, PROJECT, SBU_REQUESTED, TMP = sorted(_GLOBVAR.values())
+    ACTIVE, NAME, PROJECT, SBU_REQUESTED, TMP = sorted(
+        _GLOBVAR.values(), key=lambda n: n[-1].lower()
+    )
