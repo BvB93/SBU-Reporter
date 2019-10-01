@@ -126,7 +126,7 @@ def validate_usernames(df: pd.DataFrame) -> None:
         *vice versa*.
 
     """
-    _usage = check_output(['accinfo']).decode('utf-8').splitlines()
+    _usage = check_output(['accinfo']).decode('utf-8')
     iterator = iter(_usage.splitlines())
     for i in iterator:
         if 'User' in i and 'Group' in i:
