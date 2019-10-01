@@ -24,10 +24,10 @@ API
 from datetime import date
 from typing import (Tuple, Dict, Any, Optional)
 
+import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib as plt
-
 
 __all__ = ['pre_process_df', 'pre_process_plt', 'post_process_plt']
 
@@ -64,7 +64,7 @@ def pre_process_df(df: pd.DataFrame) -> pd.DataFrame:
     ret.columns.name = 'Month'
 
     idx_name = ret.index.name
-    ret.index = ['{}: {:,.0f}'.format(i, j.max()) for i, j in ret.iterrows()]
+    ret.index = [f'{i}: {np.nanmax(j):.0f}' for i, j in ret.iterrows()]
     ret.index.name = idx_name
     return ret.T
 
