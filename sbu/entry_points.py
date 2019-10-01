@@ -53,7 +53,7 @@ def main_sbu(args: Optional[List[str]] = None) -> None:
     )
 
     parser.add_argument(
-        '-s', '--start', type=int, default=[None], required=False, nargs=1, dest='start',
+        '-s', '--start', type=str, default=[None], required=False, nargs=1, dest='start',
         metavar='<start>',
         help=('The starting date of the interval. '
               'Accepts input formatted as YYYY, MM-YYYY or DD-MM-YYYY. '
@@ -61,7 +61,7 @@ def main_sbu(args: Optional[List[str]] = None) -> None:
     )
 
     parser.add_argument(
-        '-e', '--end', type=int, default=[None], required=False, nargs=1, dest='end',
+        '-e', '--end', type=str, default=[None], required=False, nargs=1, dest='end',
         metavar='<end>',
         help=('The final date of the interval. '
               'Accepts input formatted as YYYY, MM-YYYY or DD-MM-YYYY. '
