@@ -85,10 +85,15 @@ def get_sbu(df: pd.DataFrame, start: Optional[int] = None,
 
     for u in df.index:
         df_tmp = parse_accuse(u, sy, ey, project)
-        df.update(df_tmp)
+        try:
+            df.update(df_tmp)
+        except:
+            import pdb; pdb.set_trace()
+            pass
 
     # Calculate SBU sums
-    df[('Month', 'sum')] = df['Month'].sum(axis=1)
+    SUM = ('Month', 'sum')
+    df[SUM] = df['Month'].sum(axis=1)
     df.loc['sum'] = np.nan
     df.loc['sum', 'Month'] = df['Month'].sum(axis=0).values
     df.at['sum', PROJECT] = 'sum'
@@ -96,7 +101,7 @@ def get_sbu(df: pd.DataFrame, start: Optional[int] = None,
 
     # Mark all active users
     df[ACTIVE] = False
-    df.loc[df[('Month', 'sum')] > 1.0, ACTIVE] = True
+    df.loc[df[SUM] > 1.0, ACTIVE] = True
 
 
 def parse_accuse(user: str, start: str, end: str, project: Optional[str] = None) -> pd.DataFrame:
