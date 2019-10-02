@@ -9,14 +9,13 @@ Index
 -----
 .. currentmodule:: sbu.entry_points
 .. autosummary::
-
     main_sbu
     sbu_workflow
 
 API
 ---
-.. autofunction:: sbu.entry_points.main_sbu
-.. autofunction:: sbu.entry_points.sbu_workflow
+.. autofunction:: main_sbu
+.. autofunction:: sbu_workflow
 
 """
 
@@ -26,11 +25,10 @@ from typing import (List, Optional)
 
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
+import matplotlib as plt
+from _tkinter import TclError
 
 import sbu
-
-__all__: list = []
 
 
 def main_sbu(args: Optional[List[str]] = None) -> None:
@@ -80,10 +78,8 @@ def main_sbu(args: Optional[List[str]] = None) -> None:
     sbu_workflow(filename, project, start, end)
 
 
-def sbu_workflow(filename: str,
-                 project: Optional[str],
-                 start: Optional[int],
-                 end: Optional[int]) -> None:
+def sbu_workflow(filename: str, project: Optional[str],
+                 start: Optional[int], end: Optional[int]) -> None:
     """ """
     # Generate the dataframes
     df1 = sbu.yaml_to_pandas(filename)
@@ -91,24 +87,36 @@ def sbu_workflow(filename: str,
     df2 = sbu.get_sbu_per_project(df1)
     df3 = sbu.get_agregated_sbu(df2)
     df4 = sbu.get_percentage_sbu(df3)
+    filename = sbu.construct_filename('Cluster_usage', '.{}')
 
     # Create export figures (.png)
-    file_out = sbu.construct_filename('Cluster_usage', '.{}')
     df_plot = sbu.pre_process_df(df3)
-    ax = sbu.pre_process_plt(df_plot, sbu.lineplot_dict, sbu.style_overide)
-    fig = sbu.post_process_plt(df_plot, ax)
-    plt.savefig(file_out.format('png'), dpi=300, format='png', quality=100, transparent=True)
+    df_plot_percent = sbu.pre_process_df(df4, percent=True)
+
+    try:
+        fig, ax_tup = plt.pyplot.subplots(ncols=1, nrows=2, sharex=False, sharey=False)
+    except TclError:
+        plt.use('Agg')
+        fig, ax_tup = plt.pyplot.subplots(ncols=1, nrows=2, sharex=False, sharey=False)
+    finally:
+        fig.set_figheight(12.0)
+        fig.set_figwidth(8.0)
+
+    for ax, df in zip(ax_tup, (df_plot, df_plot_percent)):
+        ax = sbu.pre_process_plt(df, ax, sbu.lineplot_dict, sbu.style_overide)
+        percent = True if df is df_plot_percent else False
+        _ = sbu.post_process_plt(df, ax, percent=percent)
+    plt.pyplot.savefig(filename.format('png'), dpi=300, format='png', quality=100, transparent=True)
 
     # Create and export spreadsheets (.xlsx)
     for df in (df2, df3, df4):
         df[('info', 'active')] = [', '.join(i) for i in df[('info', 'active')]]
     for df in (df1, df2, df3, df4):
-        df['Month'] = df['Month'].fillna(0)
-        df.replace(np.inf, 0, inplace=True)
-        df['Month'] = df['Month'].astype(int)
+        df['Month'] = df['Month'].fillna(0.0)
+        df.replace(np.inf, 0.0, inplace=True)
         df.loc[''] = np.nan
         df.loc[' '] = np.nan
     df_concat = pd.concat([df1, df2, df3, df4])
-    df_concat.to_excel(file_out.format('xlsx'), inf_rep='', freeze_panes=(2, 1))
+    df_concat.to_excel(filename.format('xlsx'), inf_rep='', freeze_panes=(2, 1))
 
-    plt.show(block=True)
+    plt.pyplot.show(block=True)
