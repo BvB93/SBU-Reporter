@@ -30,7 +30,7 @@ import seaborn as sns
 import matplotlib as plt
 from _tkinter import TclError
 
-from sbu.globar import PI
+from sbu.globvar import PI
 
 __all__ = ['pre_process_df', 'pre_process_plt', 'post_process_plt']
 
