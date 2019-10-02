@@ -83,7 +83,6 @@ def get_sbu(df: pd.DataFrame, start: Union[None, str, int] = None,
     for i in date_range:
         df[('Month', str(i)[:7])] = np.nan
 
-    import pdb; pdb.set_trace()
     for user in df.index:
         df_user = parse_accuse(user, sy, ey, project)
         df.update(df_user)
@@ -237,8 +236,12 @@ def _get_datetimeindex(start: str, end: str) -> pd.DatetimeIndex:
         A DatetimeIndex starting from **sy** and ending on **ey**.
 
     """
-    start_ = '-'.join(reversed(start.split('-')))
-    end_ = '-'.join(reversed(end.split('-')))
+    _, mm, yyyy = start.split('-')
+    start_ = f'{yyyy}-{mm}-01'
+
+    _, mm, yyyy = end.split('-')
+    end_ = f'{yyyy}-{mm}-01'
+
     return pd.date_range(start_, end_, freq=pd.offsets.MonthBegin(), name='Month')
 
 
