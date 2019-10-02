@@ -98,13 +98,12 @@ def sbu_workflow(filename: str, project: Optional[str],
     for df in (df2, df3, df4):
         df[('info', 'active')] = [', '.join(i) for i in df[('info', 'active')]]
     for df in (df1, df2, df3, df4):
-        df['Month'] = df['Month'].fillna(0)
-        df.replace(np.inf, 0, inplace=True)
-        df['Month'] = df['Month'].astype(int)
+        df['Month'] = df['Month'].fillna(0.0)
+        df.replace(np.inf, 0.0, inplace=True)
         df.loc[''] = np.nan
         df.loc[' '] = np.nan
     df_concat = pd.concat([df1, df2, df3, df4])
-    import pdb; pdb.set_trace()
-    df_concat.to_excel(filename.format('xlsx'), inf_rep='', freeze_panes=(2, 1))
+    df_concat.to_excel(filename.format('xlsx'), inf_rep='',
+                       float_format='%.2f', freeze_panes=(2, 1))
 
     plt.show(block=True)
