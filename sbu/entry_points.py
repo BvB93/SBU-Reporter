@@ -94,6 +94,8 @@ def sbu_workflow(filename: str, project: Optional[str],
     fig = sbu.post_process_plt(df_plot, ax)
     plt.savefig(filename.format('png'), dpi=300, format='png', quality=100, transparent=True)
 
+    import pdb; pdb.set_trace()
+
     # Create and export spreadsheets (.xlsx)
     for df in (df2, df3, df4):
         df[('info', 'active')] = [', '.join(i) for i in df[('info', 'active')]]
