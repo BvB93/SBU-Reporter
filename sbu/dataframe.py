@@ -94,7 +94,6 @@ def get_sbu(df: pd.DataFrame, start: Union[None, str, int] = None,
     df.loc['sum', 'Month'] = df['Month'].sum(axis=0).values
     df.at['sum', PROJECT] = 'sum'
     df.at['sum', SBU_REQUESTED] = _get_total_sbu_requested(df)
-    import pdb; pdb.set_trace()
 
     # Mark all active users
     df[ACTIVE] = False
@@ -304,5 +303,7 @@ def _parse_date(input_date: Union[str, int, None],
 
 def _get_total_sbu_requested(df: pd.DataFrame) -> float:
     """Return the total number of requested SBUs."""
-    slice_ = df[SBU_REQUESTED]
-    return slice_.groupby(df[SBU_REQUESTED]).aggregate(sum).sum()
+    slice_ = df[[SBU_REQUESTED, PROJECT]].iloc[:-1]
+    slice_ = slice_.set_index(PROJECT, inplace=False)
+    slice_ = slice_.loc[~slice_.index.duplicated(keep='first')]
+    return slice_[SBU_REQUESTED].sum()
