@@ -20,20 +20,31 @@ API
 
 from typing import Tuple, Hashable, Dict
 
-__all__ = ['update_globals', 'ACTIVE', 'NAME', 'PROJECT', 'SBU_REQUESTED', 'TMP']
+__all__ = ['update_globals', 'ACTIVE', 'NAME', 'PI', 'PROJECT', 'SBU_REQUESTED', 'TMP']
+
+
+def _by_values(tup: Tuple[Hashable, Hashable]) -> Hashable:
+    """Take a tuple and return its last value, lowering it if possible (*i.e.* it's a string)."""
+    ret = tup[-1]
+    try:
+        return ret.lower()
+    except AttributeError:
+        return ret
+
 
 # Define mandatory columns
 _SUPER: str = 'info'
 _GLOBVAR: Dict[str, Tuple[Hashable, Hashable]] = {
     'ACTIVE': (_SUPER, 'active'),
     'NAME': (_SUPER, 'name'),
+    'PI': (_SUPER, 'PI'),
     'PROJECT': (_SUPER, 'project'),
     'SBU_REQUESTED': (_SUPER, 'SBU requested'),
     'TMP': (_SUPER, 'tmp')
 }
 
 # The keys of mandatory dataframe columns
-ACTIVE, NAME, PROJECT, SBU_REQUESTED, TMP = sorted(_GLOBVAR.values(), key=lambda n: n[-1].lower())
+ACTIVE, NAME, PI, PROJECT, SBU_REQUESTED, TMP = sorted(_GLOBVAR.values(), key=_by_values)
 
 
 def update_globals(column_dict: Dict[str, Tuple[Hashable, Hashable]]) -> None:
@@ -50,11 +61,12 @@ def update_globals(column_dict: Dict[str, Tuple[Hashable, Hashable]]) -> None:
         ===================== ==============================
          Key                   Value
         ===================== ==============================
-         ``"TMP"``             ``("info", "tmp")``
-         ``"NAME"``            ``("info", "name")``
          ``"ACTIVE"``          ``("info", "active")``
+         ``"NAME"``            ``("info", "name")``
+         ``"PI"``              ``("info", "PI")``
          ``"PROJECT"``         ``("info", "project")``
          ``"SBU_REQUESTED"``   ``("info", "SBU requested")``
+         ``"TMP"``             ``("info", "tmp")``
         ===================== ==============================
 
     Raises
@@ -83,12 +95,11 @@ def update_globals(column_dict: Dict[str, Tuple[Hashable, Hashable]]) -> None:
 
 def _populate_globals() -> None:
     """Update the all globally defined column names based on the content of :data:`_GLOBVAR`."""
-    global TMP
-    global NAME
     global ACTIVE
+    global NAME
+    global PI
     global PROJECT
     global SBU_REQUESTED
+    global TMP
 
-    ACTIVE, NAME, PROJECT, SBU_REQUESTED, TMP = sorted(
-        _GLOBVAR.values(), key=lambda n: n[-1].lower()
-    )
+    ACTIVE, NAME, PI, PROJECT, SBU_REQUESTED, TMP = sorted(_GLOBVAR.values(), key=_by_values)

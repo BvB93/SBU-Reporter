@@ -12,7 +12,7 @@ from .dataframe import get_date_range, construct_filename, get_sbu, parse_accuse
 
 from .dataframe_postprocess import get_sbu_per_project, get_agregated_sbu, get_percentage_sbu
 
-from .globvar import update_globals, ACTIVE, NAME, PROJECT, SBU_REQUESTED, TMP
+from .globvar import update_globals, ACTIVE, NAME, PI, PROJECT, SBU_REQUESTED, TMP
 
 __version__ = __version__
 __author__ = "B. F. van Beek"
@@ -29,6 +29,5 @@ __all__ = [
 
     'get_sbu_per_project', 'get_agregated_sbu', 'get_percentage_sbu',
 
-    'update_globals', 'ACTIVE', 'NAME', 'PROJECT', 'SBU_REQUESTED', 'TMP'
+    'update_globals', 'ACTIVE', 'NAME', 'PI', 'PROJECT', 'SBU_REQUESTED', 'TMP'
 ]
-
