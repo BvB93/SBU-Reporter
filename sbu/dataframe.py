@@ -83,6 +83,7 @@ def get_sbu(df: pd.DataFrame, start: Union[None, str, int] = None,
     for i in date_range:
         df[('Month', str(i)[:7])] = np.nan
 
+    import pdb; pdb.set_trace()
     for user in df.index:
         df_user = parse_accuse(user, sy, ey, project)
         df.update(df_user)
