@@ -94,6 +94,7 @@ def get_sbu(df: pd.DataFrame, start: Union[None, str, int] = None,
     df.loc['sum', 'Month'] = df['Month'].sum(axis=0).values
     df.at['sum', PROJECT] = 'sum'
     df.at['sum', SBU_REQUESTED] = _get_total_sbu_requested(df)
+    import pdb; pdb.set_trace()
 
     # Mark all active users
     df[ACTIVE] = False
