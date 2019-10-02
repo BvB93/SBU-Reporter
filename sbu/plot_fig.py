@@ -68,15 +68,14 @@ def pre_process_df(df: pd.DataFrame, percent: bool = False) -> pd.DataFrame:
 
     pi_series = df[PI].iloc[:-2]
     idx_name = ret.index.name
-    iterator = zip(pi_series, ret.iterrows())
-    ret.index = [f'{project} ({pi}): {np.nanmax(sbu):,.0f}' for pi, (project, sbu) in iterator]
-    ret.index.name = idx_name
 
     if percent:
         for k, v in ret.items():
             ret[k] = (100 * v).astype(int)
+        iterator = zip(pi_series, ret.iterrows())
         ret.index = [f'{project} ({pi}): {np.nanmax(sbu)} %' for pi, (project, sbu) in iterator]
     else:
+        iterator = zip(pi_series, ret.iterrows())
         ret.index = [f'{project} ({pi}): {np.nanmax(sbu):,.0f}' for pi, (project, sbu) in iterator]
 
     ret.index.name = idx_name
