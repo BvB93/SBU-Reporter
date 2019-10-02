@@ -28,7 +28,6 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib as plt
-from _tkinter import TclError
 
 from sbu.globvar import PI
 
@@ -121,11 +120,7 @@ def pre_process_plt(df: pd.DataFrame, ax: Optional[plt.axes.Axes] = None,
     sns.set(rc={'figure.figsize': (10.0, 6.0)})
     sns.set_style(style='ticks', rc=overide_dict)
 
-    try:
-        return sns.lineplot(data=df, ax=ax, **lineplot_dict)
-    except TclError:
-        plt.use('Agg')
-        return sns.lineplot(data=df, ax=ax, **lineplot_dict)
+    return sns.lineplot(data=df, ax=ax, **lineplot_dict)
 
 
 def post_process_plt(df: pd.DataFrame, ax: plt.axes.Axes,

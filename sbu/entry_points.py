@@ -25,7 +25,8 @@ from typing import (List, Optional)
 
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
+import matplotlib as plt
+from _tkinter import TclError
 
 import sbu
 
@@ -92,12 +93,17 @@ def sbu_workflow(filename: str, project: Optional[str],
     df_plot = sbu.pre_process_df(df3)
     df_plot_percent = sbu.pre_process_df(df4, percent=True)
 
-    fig, ax_tup = plt.subplots(ncols=1, nrows=2, sharex=True, sharey=False)
+    try:
+        fig, ax_tup = plt.pyplot.subplots(ncols=1, nrows=2, sharex=True, sharey=False)
+    except TclError:
+        plt.use('Agg')
+        fig, ax_tup = plt.pyplot.subplots(ncols=1, nrows=2, sharex=True, sharey=False)
+
     for ax, df in zip(ax_tup, (df_plot, df_plot_percent)):
         ax = sbu.pre_process_plt(df, ax, sbu.lineplot_dict, sbu.style_overide)
         percent = True if df is df_plot_percent else False
         _ = sbu.post_process_plt(df, ax, percent=percent)
-    plt.savefig(filename.format('png'), dpi=300, format='png', quality=100, transparent=True)
+    plt.pyplot.savefig(filename.format('png'), dpi=300, format='png', quality=100, transparent=True)
 
     # Create and export spreadsheets (.xlsx)
     for df in (df2, df3, df4):
@@ -110,4 +116,4 @@ def sbu_workflow(filename: str, project: Optional[str],
     df_concat = pd.concat([df1, df2, df3, df4])
     df_concat.to_excel(filename.format('xlsx'), inf_rep='', freeze_panes=(2, 1))
 
-    plt.show(block=True)
+    plt.pyplot.show(block=True)
