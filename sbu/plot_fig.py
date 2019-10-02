@@ -67,7 +67,7 @@ def pre_process_df(df: pd.DataFrame) -> pd.DataFrame:
     pi_series = df[PI].iloc[:-2]
     idx_name = ret.index.name
     iterator = zip(pi_series, ret.iterrows())
-    ret.index = [f'{project} ({pi}): {np.nanmax(sbu):.0f}' for pi, (project, sbu) in iterator]
+    ret.index = [f'{project} ({pi}): {np.nanmax(sbu):,.0f}' for pi, (project, sbu) in iterator]
     ret.index.name = idx_name
     return ret.T
 
@@ -153,5 +153,5 @@ def post_process_plt(df: pd.DataFrame, ax: plt.axes.Axes) -> plt.figure.Figure:
 
     today = date.today().strftime('%d %b %Y')
     ax.set_title('Accumulated SBU usage: {}'.format(today), fontdict={'fontsize': 18})
-    ax.legend_.set_title('Project: SBU')
+    ax.legend_.set_title('Project (PI): SBU')
     return ax.get_figure()
