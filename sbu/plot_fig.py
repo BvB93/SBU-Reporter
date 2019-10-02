@@ -75,6 +75,11 @@ def pre_process_df(df: pd.DataFrame, percent: bool = False) -> pd.DataFrame:
     if percent:
         for k, v in ret.items():
             ret[k] = (100 * v).astype(int)
+        ret.index = [f'{project} ({pi}): {np.nanmax(sbu)} %' for pi, (project, sbu) in iterator]
+    else:
+        ret.index = [f'{project} ({pi}): {np.nanmax(sbu):,.0f}' for pi, (project, sbu) in iterator]
+
+    ret.index.name = idx_name
     return ret.T
 
 

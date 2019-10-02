@@ -98,6 +98,9 @@ def sbu_workflow(filename: str, project: Optional[str],
     except TclError:
         plt.use('Agg')
         fig, ax_tup = plt.pyplot.subplots(ncols=1, nrows=2, sharex=True, sharey=False)
+    finally:
+        fig.set_figheight(19.2)
+        fig.set_figwidth(25.6)
 
     for ax, df in zip(ax_tup, (df_plot, df_plot_percent)):
         ax = sbu.pre_process_plt(df, ax, sbu.lineplot_dict, sbu.style_overide)
