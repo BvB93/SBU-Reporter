@@ -15,7 +15,6 @@ Index
     _get_datetimeindex
     _parse_date
     _get_total_sbu_requested
-    _get_active_name
 
 API
 ---
@@ -26,7 +25,6 @@ API
 .. autofunction:: _get_datetimeindex
 .. autofunction:: _parse_date
 .. autofunction:: _get_total_sbu_requested
-.. autofunction:: _get_active_name
 
 """
 

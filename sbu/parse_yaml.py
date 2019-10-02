@@ -1,12 +1,12 @@
 """
-sbu.yaml
-========
+sbu.parse_yaml
+==============
 
 A module for parsing and validating the .yaml input.
 
 Index
 -----
-.. currentmodule:: sbu.yaml
+.. currentmodule:: sbu.parse_yaml
 .. autosummary::
     yaml_to_pandas
     validate_usernames
