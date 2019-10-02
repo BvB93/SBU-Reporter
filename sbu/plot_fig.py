@@ -70,6 +70,7 @@ def pre_process_df(df: pd.DataFrame, percent: bool = False) -> pd.DataFrame:
     idx_name = ret.index.name
 
     if percent:
+        import pdb; pdb.set_trace()
         for key, series in ret.items():
             series.fillna(0.0, inplace=True)
             ret[key] = (100 * series).astype(int)
