@@ -70,10 +70,10 @@ def pre_process_df(df: pd.DataFrame, percent: bool = False) -> pd.DataFrame:
     idx_name = ret.index.name
 
     if percent:
-        import pdb; pdb.set_trace()
-        for key, series in ret.items():
-            series.fillna(0.0, inplace=True)
-            ret[key] = (100 * series).astype(int)
+        with pd.option_context('mode.use_inf_as_na', True):
+            for key, series in ret.items():
+                series.fillna(0.0, inplace=True)
+                ret[key] = (100 * series).astype(int)
         iterator = zip(pi_series, ret.iterrows())
         ret.index = [f'{project} ({pi}): {np.nanmax(sbu)} %' for pi, (project, sbu) in iterator]
     else:
