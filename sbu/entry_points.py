@@ -86,7 +86,6 @@ def sbu_workflow(filename: str, project: Optional[str],
     df2 = sbu.get_sbu_per_project(df1)
     df3 = sbu.get_agregated_sbu(df2)
     df4 = sbu.get_percentage_sbu(df3)
-    import pdb; pdb.set_trace()
     filename = sbu.construct_filename('Cluster_usage', '.{}')
 
     # Create export figures (.png)

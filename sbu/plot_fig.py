@@ -65,6 +65,7 @@ def pre_process_df(df: pd.DataFrame) -> pd.DataFrame:
     ret.columns.name = 'Month'
 
     idx_name = ret.index.name
+    import pdb; pdb.set_trace()
     ret.index = [f'{i}: {np.nanmax(j):.0f}' for i, j in ret.iterrows()]
     ret.index.name = idx_name
     return ret.T
