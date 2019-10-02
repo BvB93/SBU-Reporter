@@ -22,7 +22,7 @@ API
 
 """
 
-from typing import Tuple, Hashable
+from typing import Hashable
 
 import numpy as np
 import pandas as pd
@@ -163,7 +163,7 @@ def get_percentage_sbu(df: pd.DataFrame) -> pd.DataFrame:
     return ret
 
 
-def _get_active_name(df: pd.DataFrame, index: Hashable) -> Tuple[str]:
+def _get_active_name(df: pd.DataFrame, index: Hashable) -> tuple:
     """Return a tuple with the names of all active users."""
     if index == 'sum':
         return ()

@@ -44,8 +44,8 @@ __all__ = [
 ]
 
 
-def get_sbu(df: pd.DataFrame, start: Optional[int] = None,
-            end: Optional[int] = None, project: Optional[str] = None) -> None:
+def get_sbu(df: pd.DataFrame, start: Union[None, str, int] = None,
+            end: Union[None, str, int] = None, project: Optional[str] = None) -> None:
     """Acquire the SBU usage for each account in the :attr:`pandas.DataFrame.index`.
 
     The start and end of the reported interval can, optionally, be altered with **start**
@@ -64,15 +64,15 @@ def get_sbu(df: pd.DataFrame, start: Optional[int] = None,
         User accounts are expected to be stored in :attr:`pandas.DataFrame.index`.
         SBU usage (including the sum) is stored in the ``"Month"`` super-column.
 
-    start : :class:`int` or :class:`str`
+    start : :class:`int` or :class:`str`, optional
         Optional: The starting year of the interval.
         Defaults to the current year if ``None``.
 
-    end : :class:`str` or :class:`int`
+    end : :class:`str` or :class:`int`, optional
         Optional: The final year of the interval.
         Defaults to current year + 1 if ``None``.
 
-    project : :class:`str`
+    project : :class:`str`, optional
         Optional: The project code of the project of interest.
         If not ``None``, only SBUs expended under this project are considered.
 
@@ -120,7 +120,7 @@ def parse_accuse(user: str, start: str, end: str, project: Optional[str] = None)
         The final date of the interval.
         Accepts dates formatted as YYYY, MM-YYYY or DD-MM-YYYY.
 
-    project : :class:`str`
+    project : :class:`str`, optional
         Optional: The project code of the project of interest.
         If not ``None``, only SBUs expended under this project are considered.
 
@@ -158,12 +158,12 @@ def get_date_range(start: Optional[Union[str, int]] = None,
 
     Parameters
     ----------
-    start : :class:`int` or :class:`str`
+    start : :class:`int` or :class:`str`, optional
         The starting year of the interval.
         Accepts dates formatted as YYYY, MM-YYYY or DD-MM-YYYY.
         Defaults to the current year if ``None``.
 
-    end : :class:`str` or :class:`int`
+    end : :class:`str` or :class:`int`, optional
         The final year of the interval.
         Accepts dates formatted as YYYY, MM-YYYY or DD-MM-YYYY.
         Defaults to the current year + 1 if ``None``.
@@ -202,8 +202,9 @@ def construct_filename(prefix: str, suffix: Optional[str] = '.csv') -> str:
         A prefix for the to-be returned filename.
         The current date will be appended to this prefix.
 
-    sufix : :class:`str`
+    sufix : :class:`str`, optional
         An optional sufix of the to be returned filename.
+        No sufix will be attached if ``None``.
 
     Returns
     -------
@@ -259,8 +260,9 @@ def _parse_date(input_date: Union[str, int, None],
         The default month if a month is not provided in **input_date**.
         Expects a month in MM format.
 
-    default_year : :class:`str`
+    default_year : :class:`str`, optional
         Optional: The default year if a year is not provided in **input_date**.
+        Expects a year in YYYY format.
         Defaults to the current year if ``None``.
 
     Returns
@@ -271,34 +273,32 @@ def _parse_date(input_date: Union[str, int, None],
     Raises
     ------
     ValueError
-        Raised if **input_date** is provided as string and contains more than ``2`` dashes.
+        Raised if **input_date** is provided as string and contains more than 2 dashes.
 
     TypeError
-        Raised if **input_date** is neither ``None`` nor a string or integer.
+        Raised if **input_date** is neither ``None``, a string nor an integer.
 
     """
     if default_year is None:
         default_year = date.today().strftime('%Y')
-    if default_month is None:
-        default_month = '01'
 
-    if isinstance(input_date, int):
-        return '01-01-{:d}'.format(input_date)
-    elif input_date is None:
-        return '01-{}-{}'.format(default_month, default_year)
+    if input_date is None:
+        return f'01-{default_month}-{default_year}'
+    elif isinstance(input_date, int):
+        return f'01-01-{input_date}'
     elif isinstance(input_date, str):
         dash_count = input_date.count('-')
         if dash_count == 0:
-            return '01-{}-{}'.format(default_month, input_date)
+            return f'01-{default_month}-{input_date}'
         elif dash_count == 1:
-            return '01-{}'.format(input_date)
+            return f'01-{input_date}'
         elif dash_count == 2:
             return input_date
         else:
-            raise ValueError("'input_date': '{}'".format(input_date))
-    else:
-        err = "Unsupported object type for the 'input_date' argument: '{}'"
-        raise TypeError(err.format(input_date.__class__.__name__))
+            raise ValueError(f"'input_date': '{input_date}'")
+
+    type_name = input_date.__class__.__name__
+    raise TypeError(f"The 'input_data' parameter is of invalid type: '{type_name}'")
 
 
 def _get_total_sbu_requested(df: pd.DataFrame) -> float:

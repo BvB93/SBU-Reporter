@@ -32,7 +32,7 @@ plt.use('Agg')
 
 __all__ = ['pre_process_df', 'pre_process_plt', 'post_process_plt']
 
-_CLIP: Tuple[str] = ('palette', 'dashes', 'markers')
+_CLIP: Tuple[str, str, str] = ('palette', 'dashes', 'markers')
 
 
 def pre_process_df(df: pd.DataFrame) -> pd.DataFrame:
@@ -85,11 +85,11 @@ def pre_process_plt(df: pd.DataFrame,
         A DataFrame holding the accumulated SBU usage.
         See :func:`pre_process_df` and :func:`.get_agregated_sbu`.
 
-    lineplot_dict : :class:`dict`
-        Optional: Various keyword arguments for :func:`seaborn.lineplot`.
+    lineplot_dict : :class:`dict`, optional
+        Various keyword arguments for :func:`seaborn.lineplot`.
 
-    overide_dict : :class:`dict`
-        Optionasl: Various keyword arguments for the ``rc`` argument in :func:`seaborn.set_style`.
+    overide_dict : :class:`dict`, optional
+        Various keyword arguments for the ``rc`` argument in :func:`seaborn.set_style`.
 
     Return
     ------

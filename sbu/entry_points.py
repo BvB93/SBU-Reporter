@@ -86,13 +86,14 @@ def sbu_workflow(filename: str, project: Optional[str],
     df2 = sbu.get_sbu_per_project(df1)
     df3 = sbu.get_agregated_sbu(df2)
     df4 = sbu.get_percentage_sbu(df3)
-    file_out = sbu.construct_filename('Cluster_usage', '.{}')
+    import pdb; pdb.set_trace()
+    filename = sbu.construct_filename('Cluster_usage', '.{}')
 
     # Create export figures (.png)
     df_plot = sbu.pre_process_df(df3)
     ax = sbu.pre_process_plt(df_plot, sbu.lineplot_dict, sbu.style_overide)
     fig = sbu.post_process_plt(df_plot, ax)
-    plt.savefig(file_out.format('png'), dpi=300, format='png', quality=100, transparent=True)
+    plt.savefig(filename.format('png'), dpi=300, format='png', quality=100, transparent=True)
 
     # Create and export spreadsheets (.xlsx)
     for df in (df2, df3, df4):
@@ -104,6 +105,6 @@ def sbu_workflow(filename: str, project: Optional[str],
         df.loc[''] = np.nan
         df.loc[' '] = np.nan
     df_concat = pd.concat([df1, df2, df3, df4])
-    df_concat.to_excel(file_out.format('xlsx'), inf_rep='', freeze_panes=(2, 1))
+    df_concat.to_excel(filename.format('xlsx'), inf_rep='', freeze_panes=(2, 1))
 
     plt.show(block=True)
