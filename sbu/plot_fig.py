@@ -35,7 +35,7 @@ from sbu.globvar import PI
 __all__ = ['pre_process_df', 'pre_process_plt', 'post_process_plt']
 
 
-def pre_process_df(df: pd.DataFrame) -> pd.DataFrame:
+def pre_process_df(df: pd.DataFrame, percent: bool = False) -> pd.DataFrame:
     """Pre-process a Pandas DataFrame for the purpose of plotting.
 
     * All columns which do not fall under the ``"Month"`` super-column are removed.
@@ -48,6 +48,9 @@ def pre_process_df(df: pd.DataFrame) -> pd.DataFrame:
     df : :class:`pandas.DataFrame`
         A DataFrame holding the accumulated SBU usage.
         See :func:`.get_agregated_sbu`.
+
+    percent : :class:`bool`
+        If ``True``, multiply all values by 100 and change the data type to :class:`int`.
 
     Returns
     -------
@@ -69,10 +72,14 @@ def pre_process_df(df: pd.DataFrame) -> pd.DataFrame:
     iterator = zip(pi_series, ret.iterrows())
     ret.index = [f'{project} ({pi}): {np.nanmax(sbu):,.0f}' for pi, (project, sbu) in iterator]
     ret.index.name = idx_name
+
+    if percent:
+        for k, v in ret.items():
+            ret[k] = (100 * v).astype(int)
     return ret.T
 
 
-def pre_process_plt(df: pd.DataFrame,
+def pre_process_plt(df: pd.DataFrame, ax: Optional[plt.axes.Axes] = None,
                     lineplot_dict: Optional[Dict[str, Any]] = None,
                     overide_dict: Optional[Dict[str, Any]] = None) -> plt.axes.Axes:
     """Create a Matplotlib Axes instance from a Pandas DataFrame.
@@ -86,6 +93,9 @@ def pre_process_plt(df: pd.DataFrame,
     df : :class:`pandas.DataFrame`
         A DataFrame holding the accumulated SBU usage.
         See :func:`pre_process_df` and :func:`.get_agregated_sbu`.
+
+    ax : :class:`matplotlib.Axes<matplotlib.axes.Axes>`, optional
+        An optional Axes instance for :func:`seaborn.lineplot`.
 
     lineplot_dict : :class:`dict`, optional
         Various keyword arguments for :func:`seaborn.lineplot`.
@@ -112,13 +122,14 @@ def pre_process_plt(df: pd.DataFrame,
     sns.set_style(style='ticks', rc=overide_dict)
 
     try:
-        return sns.lineplot(data=df, **lineplot_dict)
+        return sns.lineplot(data=df, ax=ax, **lineplot_dict)
     except TclError:
         plt.use('Agg')
-        return sns.lineplot(data=df, **lineplot_dict)
+        return sns.lineplot(data=df, ax=ax, **lineplot_dict)
 
 
-def post_process_plt(df: pd.DataFrame, ax: plt.axes.Axes) -> plt.figure.Figure:
+def post_process_plt(df: pd.DataFrame, ax: plt.axes.Axes,
+                     percent: bool = False) -> plt.figure.Figure:
     """Post-process the Matplotlib Axes instance produced by :func:`pre_process_plt`.
 
     The post-processing invovles further formatting of the legend, the x-axis and the y-axis.
@@ -129,8 +140,11 @@ def post_process_plt(df: pd.DataFrame, ax: plt.axes.Axes) -> plt.figure.Figure:
         A DataFrame holding the accumulated SBU usage.
         See :func:`pre_process_df` and :func:`.get_agregated_sbu`.
 
-    ax: :class:`matplotlib.axes.Axes`
+    ax : :class:`matplotlib.Axes<matplotlib.axes.Axes>`
         An Axes instance produced by :func:`pre_process_plt`.
+
+    percent : class`bool`
+        If ``True``, apply additional formatting for handling percentages.
 
     Returns
     -------
@@ -144,7 +158,6 @@ def post_process_plt(df: pd.DataFrame, ax: plt.axes.Axes) -> plt.figure.Figure:
 
     # Format the y-axis
     ax.yaxis.set_major_formatter(plt.ticker.StrMethodFormatter('{x:,.0f}'))
-    ax.set_ylabel('SBUs (System Billing Units)  /  hours')
     ax.set(ylim=(0, y_max))
 
     # Format the x-axis
@@ -152,6 +165,12 @@ def post_process_plt(df: pd.DataFrame, ax: plt.axes.Axes) -> plt.figure.Figure:
     ax.set(xticks=df.index[0::i])
 
     today = date.today().strftime('%d %b %Y')
-    ax.set_title('Accumulated SBU usage: {}'.format(today), fontdict={'fontsize': 18})
-    ax.legend_.set_title('Project (PI): SBU')
+    if percent:
+        ax.set_ylabel('SBUs (System Billing Units)  /  %')
+        ax.set_title('Accumulated % SBU usage: {}'.format(today), fontdict={'fontsize': 18})
+        ax.legend_.set_title('Project (PI): % SBU')
+    else:
+        ax.set_ylabel('SBUs (System Billing Units)  /  hours')
+        ax.set_title('Accumulated SBU usage: {}'.format(today), fontdict={'fontsize': 18})
+        ax.legend_.set_title('Project (PI): SBU')
     return ax.get_figure()

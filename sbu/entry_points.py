@@ -90,11 +90,14 @@ def sbu_workflow(filename: str, project: Optional[str],
 
     # Create export figures (.png)
     df_plot = sbu.pre_process_df(df3)
-    ax = sbu.pre_process_plt(df_plot, sbu.lineplot_dict, sbu.style_overide)
-    fig = sbu.post_process_plt(df_plot, ax)
-    plt.savefig(filename.format('png'), dpi=300, format='png', quality=100, transparent=True)
+    df_plot_percent = sbu.pre_process_df(df4, percent=True)
 
-    import pdb; pdb.set_trace()
+    fig, ax_tup = plt.subplots(ncols=1, nrows=2, sharex=True, sharey=False)
+    for ax, df in zip(ax_tup, (df_plot, df_plot_percent)):
+        ax = sbu.pre_process_plt(df, ax, sbu.lineplot_dict, sbu.style_overide)
+        percent = True if df is df_plot_percent else False
+        _ = sbu.post_process_plt(df, ax, percent=percent)
+    plt.savefig(filename.format('png'), dpi=300, format='png', quality=100, transparent=True)
 
     # Create and export spreadsheets (.xlsx)
     for df in (df2, df3, df4):
