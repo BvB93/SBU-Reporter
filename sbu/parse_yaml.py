@@ -136,8 +136,8 @@ def validate_usernames(df: pd.DataFrame) -> None:
     bool_ar1 = np.isin(usage, df.index)
     bool_ar2 = np.isin(df.index, usage)
     if not bool_ar1.all():
-        raise KeyError('The following users are absent from the .yaml '
-                       f'input file: {usage[~bool_ar1]}')
+        err = f'The following users are absent from the .yaml input file: {usage[~bool_ar1]}'  # noqa
+        raise KeyError(err)
     if not bool_ar2.all():
-        raise KeyError('The following non-existing users are present in the .yaml '
-                       f'input file: {df.index[~bool_ar2].values}')
+        err = f'The following non-existing users are present in the .yaml input file: {df.index[~bool_ar2].values}'  # noqa
+        raise KeyError(err)
