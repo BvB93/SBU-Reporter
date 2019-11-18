@@ -178,7 +178,7 @@ def get_date_range(start: Optional[Union[str, int]] = None,
     year = today.strftime('%Y')
 
     start = _parse_date(start, default_month='01', default_year=year)
-    end = _parse_date(end, default_month=month, default_year=year)
+    end = _parse_date(end, default_day='31', default_month=month, default_year=year)
 
     return start, end
 
@@ -244,6 +244,7 @@ def _get_datetimeindex(start: str, end: str) -> pd.DatetimeIndex:
 
 
 def _parse_date(input_date: Union[str, int, None],
+                default_day: str = '01',
                 default_month: str = '01',
                 default_year: Optional[str] = None) -> str:
     """Parse any dates supplied to :func:`.get_date_range`.
@@ -285,15 +286,15 @@ def _parse_date(input_date: Union[str, int, None],
         default_year = date.today().strftime('%Y')
 
     if input_date is None:
-        return f'01-{default_month}-{default_year}'
+        return f'{default_day}-{default_month}-{default_year}'
     elif isinstance(input_date, int):
         return f'01-01-{input_date}'
     elif isinstance(input_date, str):
         dash_count = input_date.count('-')
         if dash_count == 0:
-            return f'01-{default_month}-{input_date}'
+            return f'{default_day}-{default_month}-{input_date}'
         elif dash_count == 1:
-            return f'01-{input_date}'
+            return f'{default_day}-{input_date}'
         elif dash_count == 2:
             return input_date
         else:
