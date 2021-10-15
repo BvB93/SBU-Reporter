@@ -82,7 +82,10 @@ def sbu_workflow(filename: str, project: Optional[str],
                  start: Optional[int], end: Optional[int]) -> None:
     """ """
     # Generate the dataframes
-    df1 = sbu.yaml_to_pandas(filename)
+    df1, _project = sbu.yaml_to_pandas(filename)
+    if project is None:
+        project = _project
+
     sbu.get_sbu(df1, start, end, project)
     df2 = sbu.get_sbu_per_project(df1)
     df3 = sbu.get_agregated_sbu(df2)
