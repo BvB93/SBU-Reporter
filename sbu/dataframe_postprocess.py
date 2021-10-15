@@ -158,7 +158,7 @@ def get_percentage_sbu(df: pd.DataFrame) -> pd.DataFrame:
 
     """
     ret = df.copy()
-    ret['Month'] /= ret[SBU_REQUESTED][:, None]
+    ret['Month'] /= ret[SBU_REQUESTED].values[:, None]
     ret['Month'] = ret['Month'].round(2)
     return ret
 

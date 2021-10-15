@@ -109,7 +109,7 @@ def sbu_workflow(filename: str, project: Optional[str],
         ax = sbu.pre_process_plt(df, ax, sbu.lineplot_dict, sbu.style_overide)
         percent = True if df is df_plot_percent else False
         _ = sbu.post_process_plt(df, ax, percent=percent)
-    plt.pyplot.savefig(filename.format('png'), dpi=300, format='png', quality=100, transparent=True)
+    plt.pyplot.savefig(filename.format('png'), dpi=300, format='png', transparent=True)
 
     # Create and export spreadsheets (.xlsx)
     for df in (df2, df3, df4):
