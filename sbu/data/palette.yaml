@@ -25,7 +25,6 @@ dashes:
     - []
     - [1, 2]
 linewidth: 2
-style: ticks
 markers: [o, o, o, o, o, o, o, o, o, o, o, o]
 markersize: 10
 markeredgecolor: white
