@@ -20,7 +20,7 @@ API
 
 from subprocess import check_output
 
-from typing import (Tuple, Hashable, Any, Dict)
+from typing import (Tuple, Hashable, Any, Dict, Optional)
 
 import yaml
 import numpy as np
@@ -31,15 +31,16 @@ from sbu.globvar import ACTIVE, NAME, PROJECT, SBU_REQUESTED, TMP
 __all__ = ['yaml_to_pandas', 'validate_usernames']
 
 
-def yaml_to_pandas(filename: str) -> pd.DataFrame:
+def yaml_to_pandas(filename: str) -> Tuple[pd.DataFrame, Optional[str]]:
     """Create a Pandas DataFrame out of a .yaml file.
 
     Examples
     --------
     Example yaml input:
 
-    .. code::
+    .. code-block:: yaml
 
+        __project__: BlaBla
         A:
             description: Example project
             PI: Walt Disney
@@ -51,11 +52,9 @@ def yaml_to_pandas(filename: str) -> pd.DataFrame:
 
     Example output:
 
-    .. code:: python
+    .. code-block:: python
 
-        >>> df = yaml_to_pandas(filename)
-        >>> print(type(df))
-        <class 'pandas.core.frame.DataFrame'>
+        >>> df, project = yaml_to_pandas(filename)
 
         >>> print(df)
                     info                  ...
@@ -65,6 +64,9 @@ def yaml_to_pandas(filename: str) -> pd.DataFrame:
         user2          A  Scrooge McDuck  ...        1000.0  Walt Disney
         user3          A    Mickey Mouse  ...        1000.0  Walt Disney
 
+        >>> print(project)
+        BlaBla
+
     Parameters
     ----------
     filename : :class:`str`
@@ -72,16 +74,19 @@ def yaml_to_pandas(filename: str) -> pd.DataFrame:
 
     Returns
     -------
-    :class:`pandas.DataFrame`
-        A Pandas DataFrame constructed from **filename**.
+    :class:`pandas.DataFrame` & :class:`str`, optional
+        A Pandas DataFrame and project name constructed from **filename**.
         Columns and rows are instances of :class:`pandas.MultiIndex` and
         :class:`pandas.Index`, respectively.
         All retrieved .yaml data is stored under the ``"info"`` super-column.
+        The project name will be :data:`None` if the ``__project__`` key is absent
+        from the .yaml file
 
     """
     # Read the yaml file
     with open(filename, 'r') as f:
-        dict_ = yaml.load(f, Loader=yaml.Loader)
+        dict_ = yaml.load(f, Loader=yaml.SafeLoader)
+    project = dict_.pop("__project__", None)
 
     # Convert the yaml dictionary into a dataframe
     data: Dict[str, Dict[Tuple[Hashable, Hashable], Any]] = {}
@@ -102,7 +107,7 @@ def yaml_to_pandas(filename: str) -> pd.DataFrame:
     df[ACTIVE] = False
 
     validate_usernames(df)
-    return df
+    return df, project
 
 
 def validate_usernames(df: pd.DataFrame) -> None:
