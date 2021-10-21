@@ -132,8 +132,7 @@ def validate_usernames(df: pd.DataFrame) -> None:
 
     """
     _usage = check_output(['accinfo']).decode('utf-8')
-    iterator = list(i.rstrip("\n") for i in _usage.splitlines())
-    import pdb; pdb.set_trace()
+    iterator = iter(_usage.splitlines())
     for i in iterator:
         if i == "# Users linked to this account":
             next(iterator)
