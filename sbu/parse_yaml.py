@@ -132,11 +132,14 @@ def validate_usernames(df: pd.DataFrame) -> None:
 
     """
     _usage = check_output(['accinfo']).decode('utf-8')
-    iterator = iter(_usage.splitlines())
+    iterator = (i.rstrip("\n" for i in _usage.splitlines())
     for i in iterator:
-        if 'User' in i and 'Group' in i:
+        if i == "# Users linked to this account":
             next(iterator)
-            usage = np.array([j.split()[0] for j in iterator])
+            next(iterator)
+            usage = np.array(list(iterator), dtype=np.str_)
+    else:
+        raise ValueError("Failed to parse the passed .yaml file")
 
     bool_ar1 = np.isin(usage, df.index)
     bool_ar2 = np.isin(df.index, usage)
