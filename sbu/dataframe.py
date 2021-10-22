@@ -45,9 +45,9 @@ __all__ = [
 
 def get_sbu(
     df: pd.DataFrame,
+    project: str,
     start: Union[None, str, int] = None,
     end: Union[None, str, int] = None,
-    project: Optional[str] = None,
 ) -> None:
     """Acquire the SBU usage for each account in the :attr:`pandas.DataFrame.index`.
 
@@ -102,7 +102,7 @@ def get_sbu(
     df.loc[df[SUM] > 1.0, ACTIVE] = True
 
 
-DATE_PATTERN = re.compile("([0-9]+)-([0-9][0-9])")
+DATE_PATTERN = re.compile("([0-9]+)-([0-9][0-9])-?([0-9][0-9])?")
 
 
 def parse_accuse(project: str, start: Optional[str] = None, end: Optional[str] = None) -> pd.DataFrame:
