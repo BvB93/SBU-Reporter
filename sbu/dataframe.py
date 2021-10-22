@@ -135,9 +135,9 @@ def parse_accuse(project: str, start: Optional[str] = None, end: Optional[str] =
     # Acquire SBU usage
     arg = ['accuse', '-a', project]
     if start is not None:
-        arg.append("-s", start)
+        arg += ["-s", start]
     if end is not None:
-        arg.append("-e", end)
+        arg += ["-e", end]
 
     usage = check_output(arg).decode('utf-8')
     usage_list = []
