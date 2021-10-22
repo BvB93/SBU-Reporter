@@ -83,10 +83,12 @@ def sbu_workflow(filename: str, project: Optional[str],
     """ """
     # Generate the dataframes
     df1, _project = sbu.yaml_to_pandas(filename)
-    if project is None:
+    if project is _project is None:
+        raise TypeError("`--project` is missing")
+    elif project is None:
         project = _project
 
-    sbu.get_sbu(df1, start, end, project)
+    sbu.get_sbu(df1, project, start, end)
     df2 = sbu.get_sbu_per_project(df1)
     df3 = sbu.get_agregated_sbu(df2)
     df4 = sbu.get_percentage_sbu(df3)

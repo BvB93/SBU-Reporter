@@ -28,6 +28,7 @@ API
 
 """
 
+import re
 from subprocess import check_output
 from datetime import date
 from typing import Tuple, Optional, Union
@@ -42,8 +43,12 @@ __all__ = [
 ]
 
 
-def get_sbu(df: pd.DataFrame, start: Union[None, str, int] = None,
-            end: Union[None, str, int] = None, project: Optional[str] = None) -> None:
+def get_sbu(
+    df: pd.DataFrame,
+    project: str,
+    start: Union[None, str, int] = None,
+    end: Union[None, str, int] = None,
+) -> None:
     """Acquire the SBU usage for each account in the :attr:`pandas.DataFrame.index`.
 
     The start and end of the reported interval can, optionally, be altered with **start**
@@ -81,9 +86,8 @@ def get_sbu(df: pd.DataFrame, start: Union[None, str, int] = None,
     for i in date_range:
         df[('Month', str(i)[:7])] = np.nan
 
-    for user in df.index:
-        df_user = parse_accuse(user, sy, ey, project)
-        df.update(df_user)
+    df_tmp = parse_accuse(project, sy, ey)
+    df.update(df_tmp)
 
     # Calculate SBU sums
     SUM = ('Month', 'sum')
@@ -98,7 +102,10 @@ def get_sbu(df: pd.DataFrame, start: Union[None, str, int] = None,
     df.loc[df[SUM] > 1.0, ACTIVE] = True
 
 
-def parse_accuse(user: str, start: str, end: str, project: Optional[str] = None) -> pd.DataFrame:
+DATE_PATTERN = re.compile("([0-9]+)-([0-9][0-9])-?([0-9][0-9])?")
+
+
+def parse_accuse(project: str, start: Optional[str] = None, end: Optional[str] = None) -> pd.DataFrame:
     """Gather SBU usage of a specific user account.
 
     The bash command ``accuse`` is used for gathering SBU usage along an interval defined
@@ -107,8 +114,8 @@ def parse_accuse(user: str, start: str, end: str, project: Optional[str] = None)
 
     Parameters
     ----------
-    user : :class:`str`
-        A username.
+    project : :class:`str`
+        The project code of the project of interest.
 
     start : :class:`str`
         The starting date of the interval.
@@ -118,10 +125,6 @@ def parse_accuse(user: str, start: str, end: str, project: Optional[str] = None)
         The final date of the interval.
         Accepts dates formatted as YYYY, MM-YYYY or DD-MM-YYYY.
 
-    project : :class:`str`, optional
-        Optional: The project code of the project of interest.
-        If not ``None``, only SBUs expended under this project are considered.
-
     Returns
     -------
     :class:`pandas.DataFrame`
@@ -129,25 +132,38 @@ def parse_accuse(user: str, start: str, end: str, project: Optional[str] = None)
 
     """
     # Acquire SBU usage
-    arg = ['accuse', '-u', user, '-s', start, '-e', end]
-    usage = check_output(arg).decode('utf-8').splitlines()
+    arg = ['accuse', '-a', project]
+    if start is not None:
+        arg += ["-s", start]
+    if end is not None:
+        arg += ["-e", end]
 
-    # Cast SBU usage into a dataframe
-    usage = [i.split() for i in usage[2:-1]]
-    df_tmp = pd.DataFrame(usage[1:], columns=usage[0])
-    df_tmp.drop(0, inplace=True)
-    df_tmp.index = pd.MultiIndex.from_product([['Month'], df_tmp['Month']])
-    if project is not None:
-        df_tmp.drop(df_tmp.index[df_tmp['Account'] != project], inplace=True)
+    usage = check_output(arg).decode('utf-8')
+    usage_list = []
+    for i in usage.splitlines():
+        try:
+            month, *fields = i.split()
+        except ValueError:
+            continue
+        if DATE_PATTERN.fullmatch(month):
+            usage_list.append((month, *fields))
 
-    # Parse the actual SBU's
-    df_tmp["SBU's"] = pd.to_timedelta(df_tmp["SBU's"])
-    df_tmp['Restituted'] = pd.to_timedelta(df_tmp["Restituted"])
+    df = pd.DataFrame(usage_list, columns=["Month", "Account", "User", "SBUs", "Restituted"])
+    df.set_index("User", inplace=True)
+    df["SBUs"] = pd.to_timedelta(df["SBUs"]).astype("m8[s]")
+    df["SBUs"] -= pd.to_timedelta(df["Restituted"]).astype("m8[s]")
+    df["SBUs"] /= 60**2  # seconds to hours
 
-    # Change the dtype to float
-    df_tmp[user] = (df_tmp["SBU's"] - df_tmp['Restituted']).dt.total_seconds()
-    df_tmp[user] /= 60**2  # Change seconds into hours
-    return df_tmp[[user]].T
+    index = pd.Index(sorted(set(df.index)), name="username")
+    columns = pd.MultiIndex.from_product([
+        ["Month"],
+        sorted(set(df["Month"]), key=lambda i: np.datetime64(i, "M")),
+    ])
+
+    ret = pd.DataFrame(np.nan, index=index, columns=columns)
+    for name, (sbu, month) in df[["SBUs", "Month"]].iterrows():
+        ret.loc[name, ("Month", month)] = sbu
+    return ret
 
 
 def get_date_range(start: Optional[Union[str, int]] = None,
