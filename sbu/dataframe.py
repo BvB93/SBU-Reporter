@@ -86,9 +86,8 @@ def get_sbu(
     for i in date_range:
         df[('Month', str(i)[:7])] = np.nan
 
-    df_users = parse_accuse(project, sy, ey)
-    df.update(df_users)
-    import pdb; pdb.set_trace()
+    df_tmp = parse_accuse(project, sy, ey)
+    df.update(df_tmp)
 
     # Calculate SBU sums
     SUM = ('Month', 'sum')
@@ -153,7 +152,7 @@ def parse_accuse(project: str, start: Optional[str] = None, end: Optional[str] =
     df.set_index("User", inplace=True)
     df["SBUs"] = pd.to_timedelta(df["SBUs"]).astype("m8[s]")
     df["SBUs"] -= pd.to_timedelta(df["Restituted"]).astype("m8[s]")
-    df["SBUs"] /= 60**2
+    df["SBUs"] /= 60**2  # seconds to hours
 
     index = pd.Index(sorted(set(df.index)), name="username")
     columns = pd.MultiIndex.from_product([
