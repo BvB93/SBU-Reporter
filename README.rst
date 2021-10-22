@@ -1,5 +1,5 @@
 ##################
-SBU-Reporter 0.2.0
+SBU-Reporter 0.3.0
 ##################
 
 Tools for collection, formating and reporting SBU usage on the SURFsara HPC clusters.

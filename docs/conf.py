@@ -59,9 +59,9 @@ master_doc = 'index'
 
 
 # General information about the project.
-project = u'SBU-Reporter'
-copyright = u'2019, B. F. van Beek'
-author = u"B. F. van Beek"
+project = 'SBU-Reporter'
+copyright = '2021, Bas van Beek'
+author = "Bas van Beek"
 
 
 # The version info for the project you're documenting, acts as replacement for

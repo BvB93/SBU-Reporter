@@ -126,7 +126,7 @@ def validate_usernames(df: pd.DataFrame) -> None:
 
     Raises
     ------
-    KeyError
+    ValueError
         Raised if one or more users reported by the ``accinfo`` command are absent from **df** or
         *vice versa*.
 
@@ -144,9 +144,17 @@ def validate_usernames(df: pd.DataFrame) -> None:
 
     bool_ar1 = np.isin(usage, df.index)
     bool_ar2 = np.isin(df.index, usage)
+<<<<<<< Updated upstream
     if not bool_ar1.all():
         err = f'The following users are absent from the .yaml input file: {usage[~bool_ar1]}'  # noqa
         raise KeyError(err)
     if not bool_ar2.all():
         err = f'The following non-existing users are present in the .yaml input file: {df.index[~bool_ar2].values}'  # noqa
         raise KeyError(err)
+=======
+    name_diff = ""
+    name_diff += "".join(f"\n- {name}" for name in usage[~bool_ar1])
+    name_diff += "".join(f"\n+ {name}" for name in df.index[~bool_ar2].values)
+    if name_diff:
+        raise ValueError(f"User mismatch between .yaml file and `accinfo` output:{name_diff}")
+>>>>>>> Stashed changes
