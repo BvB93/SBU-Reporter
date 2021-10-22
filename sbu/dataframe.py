@@ -43,8 +43,12 @@ __all__ = [
 ]
 
 
-def get_sbu(df: pd.DataFrame, start: Union[None, str, int] = None,
-            end: Union[None, str, int] = None, project: Optional[str] = None) -> None:
+def get_sbu(
+    df: pd.DataFrame,
+    start: Union[None, str, int] = None,
+    end: Union[None, str, int] = None,
+    project: Optional[str] = None,
+) -> None:
     """Acquire the SBU usage for each account in the :attr:`pandas.DataFrame.index`.
 
     The start and end of the reported interval can, optionally, be altered with **start**
@@ -81,11 +85,10 @@ def get_sbu(df: pd.DataFrame, start: Union[None, str, int] = None,
     date_range = _get_datetimeindex(sy, ey)
     for i in date_range:
         df[('Month', str(i)[:7])] = np.nan
-    import pdb; pdb.set_trace()
 
-    for user in df.index:
-        df_user = parse_accuse(user, sy, ey, project)
-        df.update(df_user)
+    df_users = parse_accuse(project, sy, ey)
+    df.update(df_users)
+    import pdb; pdb.set_trace()
 
     # Calculate SBU sums
     SUM = ('Month', 'sum')
@@ -145,23 +148,23 @@ def parse_accuse(project: str, start: Optional[str] = None, end: Optional[str] =
             continue
         if DATE_PATTERN.fullmatch(month):
             usage_list.append((month, *fields))
+
     df = pd.DataFrame(usage_list, columns=["Month", "Account", "User", "SBUs", "Restituted"])
-    df.set_index()
+    df.set_index("User", inplace=True)
+    df["SBUs"] = pd.to_timedelta(df["SBUs"]).astype("m8[s]")
+    df["SBUs"] -= pd.to_timedelta(df["Restituted"]).astype("m8[s]")
+    df["SBUs"] /= 60**2
 
-    # Cast SBU usage into a dataframe
-    usage = [i.split() for i in usage[2:-1]]
-    df_tmp = pd.DataFrame(usage[1:], columns=usage[0])
-    df_tmp.drop(0, inplace=True)
-    df_tmp.index = pd.MultiIndex.from_product([['Month'], df_tmp['Month']])
+    index = pd.Index(sorted(set(df.index)), name="username")
+    columns = pd.MultiIndex.from_product([
+        ["Month"],
+        sorted(set(df["Month"]), key=lambda i: np.datetime64(i, "M")),
+    ])
 
-    # Parse the actual SBU's
-    df_tmp["SBUs"] = pd.to_timedelta(df_tmp["SBU's"])
-    df_tmp['Restituted'] = pd.to_timedelta(df_tmp["Restituted"])
-
-    # Change the dtype to float
-    df_tmp[user] = (df_tmp["SBUs"] - df_tmp['Restituted']).dt.total_seconds()
-    df_tmp[user] /= 60**2  # Change seconds into hours
-    return df_tmp[[user]].T
+    ret = pd.DataFrame(np.nan, index=index, columns=columns)
+    for name, (sbu, month) in df[["SBUs", "Month"]].iterrows():
+        ret.loc[name, ("Month", month)] = sbu
+    return ret
 
 
 def get_date_range(start: Optional[Union[str, int]] = None,
