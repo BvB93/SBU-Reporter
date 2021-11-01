@@ -34,8 +34,10 @@ jobs:
 
             -   name: Setup CP2K 8.2
                 run: |
-                    git clone git+https://github.com/cp2k/cp2k@v8.2.0
-                    mkdir cp2k/bin
-                    wget https://github.com/cp2k/cp2k/releases/download/v8.2.0/cp2k-8.2-Linux-x86_64.ssmp --directory-prefix="$PWD/cp2k/bin"
-                    export PATH=$PATH:"$PWD/cp2k/bin"
-                    export CP2K_DATA_DIR="$PWD/cp2k/data"
+                    git clone --recursive https://github.com/cp2k/cp2k
+                    cd cp2k
+                    git checkout tags/v8.2.0
+                    mkdir bin
+                    wget https://github.com/cp2k/cp2k/releases/download/v8.2.0/cp2k-8.2-Linux-x86_64.ssmp --directory-prefix="$PWD/bin"
+                    export PATH=$PATH:"$PWD/bin"
+                    export CP2K_DATA_DIR="$PWD/data"
