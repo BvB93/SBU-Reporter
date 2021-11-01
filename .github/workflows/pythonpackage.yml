@@ -27,12 +27,13 @@ jobs:
                 with:
                     python-version: ${{ matrix.python-version }}
 
+            -   name: Setup cmake
+                uses: jwlawson/actions-setup-cmake@v1.11
+
             -   name: Clone CP2K 8.2
-                run: |
-                    git clone -b support/v8.2 https://github.com/cp2k/cp2k.git cp2k
+                run: git clone -b support/v8.2 https://github.com/cp2k/cp2k.git cp2k
 
             -   name: Build CP2K 8.2
                 run: |
-                    ls -l
                     cd cp2k/tools/toolchain
                     ./install_cp2k_toolchain.sh --with-libxsmm=install --with-openblas=system --with-fftw=system
