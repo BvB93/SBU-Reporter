@@ -38,4 +38,4 @@ jobs:
             -   name: Build CP2K 8.2
                 run: |
                     cd cp2k/tools/toolchain
-                    ./install_cp2k_toolchain.sh --with-libxsmm=install --with-openblas=system --with-fftw=system --with-cmake=system
+                    ./install_cp2k_toolchain.sh --with-libxsmm=install --with-cmake=system
