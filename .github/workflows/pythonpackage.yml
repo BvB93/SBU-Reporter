@@ -1,0 +1,33 @@
+# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: Build
+
+on:
+    push:
+        branches:
+            - master
+    pull_request:
+
+jobs:
+    build:
+        name: ${{ matrix.os }} (py ${{ matrix.python-version }}${{ matrix.special }})
+        runs-on: ${{ matrix.os }}
+        strategy:
+            fail-fast: False
+            matrix:
+                os: [ubuntu-latest]
+                python-version: [3.9]
+
+        steps:
+            -   uses: actions/checkout@v2
+
+            -   name: Set up Python ${{ matrix.python-version }} on ${{ matrix.os }}
+                uses: actions/setup-python@v2
+                with:
+                    python-version: ${{ matrix.python-version }}
+
+            -   name: Set up CP2K 8.2
+                run:
+                    git clone -b support/8.2 https://github.com/cp2k/cp2k.git cp2k
+                    cp2k/install_cp2k_toolchain.sh --with-libxsmm=install --with-openblas=system --with-fftw=system --with-reflapack=no
