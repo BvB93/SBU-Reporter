@@ -22,13 +22,15 @@ jobs:
         steps:
             -   uses: actions/checkout@v2
 
+            -   name: Cancel Previous Runs
+                uses: styfle/cancel-workflow-action@0.9.1
+                with:
+                    access_token: ${{ github.token }}
+
             -   name: Set up Python ${{ matrix.python-version }} on ${{ matrix.os }}
                 uses: actions/setup-python@v2
                 with:
                     python-version: ${{ matrix.python-version }}
-
-            -   name: Setup cmake
-                uses: jwlawson/actions-setup-cmake@v1.11
 
             -   name: Clone CP2K 8.2
                 run: git clone -b support/v8.2 https://github.com/cp2k/cp2k.git cp2k
