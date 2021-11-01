@@ -30,4 +30,4 @@ jobs:
             -   name: Set up CP2K 8.2
                 run: |
                     git clone -b support/v8.2 https://github.com/cp2k/cp2k.git cp2k
-                    cp2k/install_cp2k_toolchain.sh --with-libxsmm=install --with-openblas=system --with-fftw=system --with-reflapack=no
+                    cp2k/tools/toolchain/install_cp2k_toolchain.sh --with-libxsmm=install --with-openblas=system --with-fftw=system --with-reflapack=no
