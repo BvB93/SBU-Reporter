@@ -35,4 +35,12 @@ jobs:
             -   name: Setup CP2K 8.2
                 env:
                     TEST: "${{ secrets.TEST }}"
-                run: echo 1
+                run: |
+                    case "${{ steps.load-ams.outputs.cache-hit }}" in
+                        "true")
+                            echo 1
+                            ;;
+                        *)
+                            echo 0
+                            ;;
+                    esac
