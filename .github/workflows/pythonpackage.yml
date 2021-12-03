@@ -11,13 +11,13 @@ on:
 
 jobs:
     build:
-        name: ${{ matrix.os }} (py ${{ matrix.python-version }}${{ matrix.special }})
+        name: ${{ matrix.os }} (py ${{ matrix.version }}${{ matrix.special }})
         runs-on: ${{ matrix.os }}
         strategy:
             fail-fast: False
             matrix:
                 os: [ubuntu-latest]
-                python-version: [3.9]
+                version: ["3.9"]
 
         steps:
             -   uses: actions/checkout@v2
@@ -27,10 +27,10 @@ jobs:
                 with:
                     access_token: ${{ github.token }}
 
-            -   name: Set up Python ${{ matrix.python-version }} on ${{ matrix.os }}
+            -   name: Set up Python ${{ matrix.version }} on ${{ matrix.os }}
                 uses: actions/setup-python@v2
                 with:
-                    python-version: ${{ matrix.python-version }}
+                    python-version: ${{ matrix.version }}
 
             -   name: Setup CP2K 8.2
                 env:
