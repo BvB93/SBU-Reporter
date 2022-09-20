@@ -29,8 +29,8 @@ API
 """
 
 import re
+import datetime
 from subprocess import check_output
-from datetime import date
 from typing import Tuple, Optional, Union
 
 import numpy as np
@@ -166,6 +166,14 @@ def parse_accuse(project: str, start: Optional[str] = None, end: Optional[str] =
     return ret
 
 
+def _get_last_day_of_month(any_day: datetime.date) -> str:
+    # The day 28 exists in every month. 4 days later, it's always next month
+    next_month = any_day.replace(day=28) + datetime.timedelta(days=4)
+    # subtracting the number of the current day brings us back one month
+    ret = next_month - datetime.timedelta(days=next_month.day)
+    return ret.strftime('%d')
+
+
 def get_date_range(start: Optional[Union[str, int]] = None,
                    end: Optional[Union[str, int]] = None) -> Tuple[str, str]:
     """Return a starting and ending date as two strings.
@@ -189,12 +197,13 @@ def get_date_range(start: Optional[Union[str, int]] = None,
         Dates are formatted as DD-MM-YYYY.
 
     """
-    today = date.today()
+    today = datetime.date.today()
     month = today.strftime('%m')
     year = today.strftime('%Y')
+    last_day = _get_last_day_of_month(today)
 
     start = _parse_date(start, default_month='01', default_year=year)
-    end = _parse_date(end, default_day='31', default_month=month, default_year=year)
+    end = _parse_date(end, default_day=last_day, default_month=month, default_year=year)
 
     return start, end
 
@@ -226,7 +235,7 @@ def construct_filename(prefix: str, suffix: Optional[str] = '.csv') -> str:
         A filename consisting of **prefix**, the current date and **suffix**.
 
     """
-    today = date.today()
+    today = datetime.date.today()
     suffix = suffix or ''
     return prefix + today.strftime('_%d_%b_%Y') + suffix
 
@@ -299,7 +308,7 @@ def _parse_date(input_date: Union[str, int, None],
 
     """
     if default_year is None:
-        default_year = date.today().strftime('%Y')
+        default_year = datetime.date.today().strftime('%Y')
 
     if input_date is None:
         return f'{default_day}-{default_month}-{default_year}'
