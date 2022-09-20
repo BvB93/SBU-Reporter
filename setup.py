@@ -28,6 +28,7 @@ setup(
         'sbu',
         'sbu.data'
     ],
+    python_requires='>=3.6',
     package_dir={'sbu': 'sbu'},
     package_data={'sbu': ['data/*.yaml', 'py.typed']},
     include_package_data=True,
