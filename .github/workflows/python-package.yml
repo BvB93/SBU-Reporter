@@ -1,0 +1,27 @@
+name: Python Package
+
+on: [push]
+
+jobs:
+  Test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python 3
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.*"
+
+    - name: Install dependencies
+      run: pip install -e .[test]
+
+    - name: Python info
+      run: |
+        which python
+        python --version
+        pip list
+
+    - name: Test with pytest
+      run: pytest
