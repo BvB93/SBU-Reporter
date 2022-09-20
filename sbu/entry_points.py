@@ -119,8 +119,10 @@ def sbu_workflow(filename: str, project: Optional[str],
     for df in (df1, df2, df3, df4):
         df['Month'] = df['Month'].fillna(0.0)
         df.replace(np.inf, 0.0, inplace=True)
-        df.loc[''] = np.nan
-        df.loc[' '] = np.nan
+        nan_template = {k: np.nan for k in df.columns}
+        nan_template['info', 'active'] = False
+        df.loc[''] = nan_template
+        df.loc[' '] = nan_template
     df_concat = pd.concat([df1, df2, df3, df4])
     df_concat.to_excel(filename.format('xlsx'), inf_rep='', freeze_panes=(2, 1))
 

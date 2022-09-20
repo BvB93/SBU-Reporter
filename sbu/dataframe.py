@@ -92,7 +92,9 @@ def get_sbu(
     # Calculate SBU sums
     SUM = ('Month', 'sum')
     df[SUM] = df['Month'].sum(axis=1)
-    df.loc['sum'] = np.nan
+    nan_template = {k: np.nan for k in df.columns}
+    nan_template['info', 'active'] = False
+    df.loc['sum'] = nan_template
     df.loc['sum', 'Month'] = df['Month'].sum(axis=0).values
     df.at['sum', PROJECT] = 'sum'
     df.at['sum', SBU_REQUESTED] = _get_total_sbu_requested(df)
