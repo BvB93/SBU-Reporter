@@ -131,12 +131,10 @@ def validate_usernames(df: pd.DataFrame) -> None:
         *vice versa*.
 
     """
-    _usage = check_output(['accinfo']).decode('utf-8')
-    iterator = iter(_usage.splitlines())
+    _usage = check_output(['accinfo'], encoding='utf8')
+    iterator = filter(None, _usage.splitlines())
     for i in iterator:
         if i == "# Users linked to this account":
-            next(iterator)
-            next(iterator)
             usage = np.array(list(iterator), dtype=np.str_)
             break
     else:
