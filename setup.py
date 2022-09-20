@@ -56,8 +56,8 @@ setup(
         'numpy',
         'pandas',
         'matplotlib',
-        'seaborn',
-        'openpyxl'
+        'seaborn<0.12',
+        'openpyxl',
     ],
     extras_require={
         'test': ['pytest', 'pytest-cov', 'pycodestyle'],
