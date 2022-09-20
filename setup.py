@@ -29,12 +29,12 @@ setup(
         'sbu.data'
     ],
     package_dir={'sbu': 'sbu'},
-    package_data={'sbu': ['data/*.yaml']},
+    package_data={'sbu': ['data/*.yaml', 'py.typed']},
     include_package_data=True,
     entry_points={'console_scripts': [
         'get_sbu=sbu.entry_points:main_sbu'
     ]},
-    license="GNU General Public License v3 or later",
+    license="MIT License",
     zip_safe=False,
     keywords=[
         'python-3'
@@ -43,9 +43,11 @@ setup(
         'Development Status :: 4 - Beta',
         'Intended Audience :: System Administrators',
         'Topic :: System :: Monitoring'
-        'License :: OSI Approved :: MIT Licence',
+        'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
-        'Programming Language :: Python :: 3 :: Only'
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3 :: Only',
+        'Typing :: Typed,'
     ],
     test_suite='tests',
     install_requires=[
