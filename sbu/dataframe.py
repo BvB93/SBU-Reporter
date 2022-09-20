@@ -107,7 +107,11 @@ def get_sbu(
 DATE_PATTERN = re.compile("([0-9]+)-([0-9][0-9])-?([0-9][0-9])?")
 
 
-def parse_accuse(project: str, start: Optional[str] = None, end: Optional[str] = None) -> pd.DataFrame:
+def parse_accuse(
+    project: str,
+    start: Optional[str] = None,
+    end: Optional[str] = None,
+) -> pd.DataFrame:
     """Gather SBU usage of a specific user account.
 
     The bash command ``accuse`` is used for gathering SBU usage along an interval defined
