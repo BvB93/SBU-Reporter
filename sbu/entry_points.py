@@ -26,7 +26,11 @@ from typing import (List, Optional)
 import numpy as np
 import pandas as pd
 import matplotlib as plt
-from _tkinter import TclError
+
+try:
+    from _tkinter import TclError
+except ImportError:
+    TclError = Exception
 
 import sbu
 
